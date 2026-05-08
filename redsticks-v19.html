@@ -1860,12 +1860,12 @@ function openSquadSelector(){
         const statusLbl=inF?`<span style="font-size:9px;color:#16a34a;font-weight:700">CAMPO</span>`:
                         inS?`<span style="font-size:9px;color:#ea580c;font-weight:700">BANQUILLO</span>`:
                             `<span style="font-size:9px;color:#ccc;font-weight:600">NO CONV.</span>`;
-        return`<div style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid #f5f5f5;background:${bg};cursor:pointer" onclick="cycleSquadState(${p.id})">
-          ${dot}
+        return`<div data-squad-id="${p.id}" style="display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid #f5f5f5;background:${bg};cursor:pointer" onclick="cycleSquadState(${p.id})">
+          <div class="sq-dot" style="width:22px;height:22px;border-radius:6px;border:2px solid ${inF?"#16a34a":inS?"#ea580c":"#e8e8f0"};background:${inF?"#16a34a":inS?"#fff7ed":"transparent"};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:${inF?"#fff":inS?"#ea580c":"#ccc"}">${inF?"●":inS?"○":"—"}</div>
           <span style="font-weight:800;color:#C8102E;min-width:28px;font-family:'JetBrains Mono',monospace">#${p.number}</span>
           <span style="font-weight:700;flex:1;color:#1a1a2e">${p.name}</span>
           <span style="font-size:9px;color:#aaa;background:#f5f5f5;padding:2px 6px;border-radius:4px;margin-right:4px">${p.position}</span>
-          ${statusLbl}
+          <span class="sq-lbl" style="font-size:9px;font-weight:700;color:${inF?"#16a34a":inS?"#ea580c":"#ccc"}">${inF?"CAMPO":inS?"BANQUILLO":"NO CONV."}</span>
         </div>`;
       }).join("")}
     </div>
@@ -1876,33 +1876,41 @@ function cycleSquadState(id) {
   const inF = S.initialOnField.includes(id);
   const inS = S.squad.includes(id) && !inF;
   const noC = !S.squad.includes(id);
-  
+
   if (noC) {
-    // No convocado → Banquillo (if space)
+    // No conv → Banquillo
     if (S.squad.length >= 18) { pushAlert("Máximo 18 convocados","warn"); return; }
     S.squad.push(id);
   } else if (inS) {
-    // Banquillo → Campo (if space)
+    // Banquillo → Campo
     if (S.initialOnField.length >= 11) { pushAlert("Máximo 11 en campo","warn"); return; }
     S.initialOnField.push(id);
   } else if (inF) {
-    // Campo → No convocado (remove from both)
+    // Campo → Banquillo (not directly to no conv)
     S.initialOnField = S.initialOnField.filter(x => x !== id);
-    S.squad = S.squad.filter(x => x !== id);
-    S.pairs = S.pairs.filter(p => p.outId !== id && p.inId !== id);
+    // stays in squad = banquillo
   }
-  
+
+  scheduleSave();
+
+  // Update row background and labels in place without rebuilding entire modal
+  const row = document.querySelector(`[data-squad-id="${id}"]`);
+  if (row) {
+    const newInF = S.initialOnField.includes(id);
+    const newInS = S.squad.includes(id) && !newInF;
+    const newNoC = !S.squad.includes(id);
+    const bg = newInF?"#f0fdf4":newInS?"#fff7ed":"#fff";
+    row.style.background = bg;
+    const dot = row.querySelector(".sq-dot");
+    const lbl = row.querySelector(".sq-lbl");
+    if(dot){dot.style.borderColor=newInF?"#16a34a":newInS?"#ea580c":"#e8e8f0";dot.style.background=newInF?"#16a34a":newInS?"#fff7ed":"transparent";dot.textContent=newInF?"●":newInS?"○":"—";dot.style.color=newInF?"#fff":newInS?"#ea580c":"#ccc";}
+    if(lbl){lbl.textContent=newInF?"CAMPO":newInS?"BANQUILLO":"NO CONV.";lbl.style.color=newInF?"#16a34a":newInS?"#ea580c":"#ccc";}
+  }
   // Update counters
-  const cf = document.getElementById("cnt-field");
-  const cb = document.getElementById("cnt-bench");
-  const cn = document.getElementById("cnt-noconv");
-  if (cf) cf.textContent = S.initialOnField.length;
-  if (cb) cb.textContent = Math.max(0, S.squad.length - S.initialOnField.length);
-  const tp = teamPlayers();
-  if (cn) cn.textContent = tp.length - S.squad.length;
-  
-  // Re-render the row
-  openSquadSelector();
+  const cf=document.getElementById("cnt-field");const cb=document.getElementById("cnt-bench");const cn=document.getElementById("cnt-noconv");
+  if(cf)cf.textContent=S.initialOnField.length;
+  if(cb)cb.textContent=Math.max(0,S.squad.length-S.initialOnField.length);
+  const tp=teamPlayers();if(cn)cn.textContent=tp.length-S.squad.length;
 }
 function openAddPlayer(){openModal(`<div class="modal-title">NUEVO JUGADOR</div><div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="np-name" placeholder="Nombre completo"></div><div class="frow"><label class="flbl">DORSAL</label><input class="finp" type="number" id="np-num" placeholder="1-99" style="max-width:90px;flex:none"></div><div class="frow"><label class="flbl">POS</label><select class="finp" id="np-pos" style="max-width:110px;flex:none">${["GK","DEF","MID","FWD"].map(p=>`<option>${p}</option>`).join("")}</select></div><div style="display:flex;gap:10px;margin-top:14px"><button class="btn-primary" style="margin-top:0" onclick="addPlayer()">AÑADIR</button><button class="btn-secondary" onclick="closeModal()">CANCELAR</button></div>`);}
 function addPlayer(){const name=document.getElementById("np-name")?.value?.trim();const num=parseInt(document.getElementById("np-num")?.value);const pos=document.getElementById("np-pos")?.value||"MID";if(!name||!num)return;const id=++nextPlayerId;pool.push({id,teamId:activeTeamId,name,number:num,position:pos,roles:{}});S.squad.push(id);S.fieldPositions[id]={x:50,y:50};closeModal();scheduleSave();renderContent();}
