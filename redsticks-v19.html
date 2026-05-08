@@ -1886,9 +1886,10 @@ function cycleSquadState(id) {
     if (S.initialOnField.length >= 11) { pushAlert("Máximo 11 en campo","warn"); return; }
     S.initialOnField.push(id);
   } else if (inF) {
-    // Campo → Banquillo (not directly to no conv)
+    // Campo → No convocado
     S.initialOnField = S.initialOnField.filter(x => x !== id);
-    // stays in squad = banquillo
+    S.squad = S.squad.filter(x => x !== id);
+    S.pairs = S.pairs.filter(p => p.outId !== id && p.inId !== id);
   }
 
   scheduleSave();
