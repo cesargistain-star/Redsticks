@@ -882,15 +882,12 @@ let _pendingOutIds = new Set();
 let _pendingInIds = new Set();
 let _pendingPairMap = {}; // outId -> pair info
 
-function updatePendingTokens() {
+function updatePendingSets() {
+  // Update the Sets only - no DOM manipulation
   if(!isQPhase()||manualMode){
     _pendingOutIds = new Set();
     _pendingInIds = new Set();
     _pendingPairMap = {};
-    // Remove pulse classes
-    document.querySelectorAll('.tok-pending-out,.tok-pending-in').forEach(t=>{
-      t.classList.remove('tok-pending-out','tok-pending-in');
-    });
     return;
   }
   const byMin = getPendingByMinute();
@@ -900,7 +897,6 @@ function updatePendingTokens() {
   Object.keys(byMin).map(Number).forEach(minInQ=>{
     const secInQ = minInQ * 60;
     const secsToChange = secInQ - S.quarterElapsed;
-    // Show pending indicator when <= 90s away or already due
     if(secsToChange <= 90){
       byMin[minInQ].forEach(pair=>{
         newOut.add(pair.outId);
@@ -913,14 +909,15 @@ function updatePendingTokens() {
   _pendingOutIds = newOut;
   _pendingInIds = newIn;
   _pendingPairMap = newMap;
+}
 
-  // Apply/remove classes on field tokens
+function updatePendingTokens() {
+  updatePendingSets();
+  // Apply/remove classes on existing DOM tokens
   document.querySelectorAll('[data-field-id]').forEach(tok=>{
     const id = parseInt(tok.dataset.fieldId);
     tok.classList.toggle('tok-pending-out', _pendingOutIds.has(id));
   });
-
-  // Apply/remove classes on bench tiles
   document.querySelectorAll('[data-bench-id]').forEach(tile=>{
     const id = parseInt(tile.dataset.benchId);
     tile.classList.toggle('bench-tile-pending', _pendingInIds.has(id));
@@ -1429,6 +1426,8 @@ function renderRightPanel(){
 // so drags can cross element boundaries
 // ─────────────────────────────────────
 function buildFieldHTML(curOnField,curMin){
+  // Populate pending sets before building tokens
+  updatePendingSets();
   const byMin=getPendingByMinute();
   const leavingIds=new Set();Object.values(byMin).forEach(grp=>grp.forEach(p=>leavingIds.add(p.outId)));
   const fc=FIELD_COLORS[S.fieldColor]||"#2d7a2d";
