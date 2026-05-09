@@ -883,29 +883,45 @@ let _pendingInIds = new Set();
 let _pendingPairMap = {}; // outId -> pair info
 
 function updatePendingSets() {
-  // Update the Sets only - no DOM manipulation
   if(!isQPhase()||manualMode){
     _pendingOutIds = new Set();
     _pendingInIds = new Set();
     _pendingPairMap = {};
     return;
   }
-  const byMin = getPendingByMinute();
   const newOut = new Set();
   const newIn = new Set();
   const newMap = {};
-  Object.keys(byMin).map(Number).forEach(minInQ=>{
-    const secInQ = minInQ * 60;
+  const qi = qIdx(); // 0=Q1,1=Q2,2=Q3,3=Q4
+  
+  // Get the source pairs for this quarter
+  let sourcePairs = [];
+  if(qi===2 && mirrorMode){
+    // Q3 mirrors Q1
+    sourcePairs = S.pairs.filter(p=>p.minute>=0&&p.minute<=14&&!S.executedPairIds.has("mirror_q3_"+p.id));
+    sourcePairs = sourcePairs.map(p=>({...p, _minInQ: p.minute%15, _mirrorKey:"mirror_q3_"+p.id}));
+  } else if(qi===3 && mirrorMode){
+    // Q4 mirrors Q2
+    sourcePairs = S.pairs.filter(p=>p.minute>=15&&p.minute<=29&&!S.executedPairIds.has("mirror_q4_"+p.id));
+    sourcePairs = sourcePairs.map(p=>({...p, _minInQ: p.minute%15, _mirrorKey:"mirror_q4_"+p.id}));
+  } else {
+    const qStart = qi*15, qEnd = qStart+14;
+    sourcePairs = S.pairs.filter(p=>p.minute>=qStart&&p.minute<=qEnd&&p.minute<60&&!S.executedPairIds.has(p.id));
+    sourcePairs = sourcePairs.map(p=>({...p, _minInQ: p.minute%15, _mirrorKey:""}));
+  }
+
+  sourcePairs.forEach(pair=>{
+    const secInQ = pair._minInQ * 60;
     const secsToChange = secInQ - S.quarterElapsed;
+    // Show as pending when <= 90s away OR already due
     if(secsToChange <= 90){
-      byMin[minInQ].forEach(pair=>{
-        newOut.add(pair.outId);
-        newIn.add(pair.inId);
-        newMap[pair.outId] = {pair, secsToChange: Math.max(0,secsToChange), minInQ};
-        newMap["in_"+pair.inId] = {pair, secsToChange: Math.max(0,secsToChange), minInQ};
-      });
+      newOut.add(pair.outId);
+      newIn.add(pair.inId);
+      newMap[pair.outId] = {pair, secsToChange: Math.max(0,secsToChange)};
+      newMap["in_"+pair.inId] = {pair, secsToChange: Math.max(0,secsToChange)};
     }
   });
+
   _pendingOutIds = newOut;
   _pendingInIds = newIn;
   _pendingPairMap = newMap;
