@@ -500,6 +500,14 @@ function deleteVariant(id) {
   openVariantEditor();
 }
 
+// ── MATCH PRESETS ──
+function loadItaliaPairs(){
+  if(activeTeamId===1&&S.pairs.length===0){
+    S.pairs=[{id:1778541824976,minute:3,outId:17,inId:23},{id:1778541824977,minute:3,outId:22,inId:29},{id:1778541824978,minute:3,outId:19,inId:10},{id:1778541824979,minute:3,outId:11,inId:24},{id:1778541824980,minute:3,outId:21,inId:28},{id:1778541824981,minute:6,outId:1,inId:17},{id:1778541824982,minute:6,outId:20,inId:22},{id:1778541824983,minute:6,outId:3,inId:11},{id:1778541824984,minute:6,outId:7,inId:21},{id:1778541824985,minute:9,outId:23,inId:1},{id:1778541824986,minute:9,outId:29,inId:20},{id:1778541824987,minute:9,outId:10,inId:3},{id:1778541824988,minute:9,outId:24,inId:19},{id:1778541824989,minute:9,outId:28,inId:7},{id:1778541824990,minute:11,outId:17,inId:23},{id:1778541824991,minute:11,outId:11,inId:24},{id:1778541824992,minute:12,outId:23,inId:17},{id:1778541824993,minute:12,outId:22,inId:29},{id:1778541824994,minute:12,outId:27,inId:26},{id:1778541824995,minute:13,outId:3,inId:10},{id:1778541824996,minute:14,outId:17,inId:23},{id:1778541824997,minute:18,outId:23,inId:1},{id:1778541824998,minute:18,outId:29,inId:20},{id:1778541824999,minute:18,outId:24,inId:3},{id:1778541825000,minute:18,outId:27,inId:7},{id:1778541825001,minute:18,outId:26,inId:21},{id:1778541825002,minute:19,outId:11,inId:19},{id:1778541825003,minute:20,outId:17,inId:23},{id:1778541825004,minute:21,outId:22,inId:29},{id:1778541825005,minute:21,outId:10,inId:24},{id:1778541825006,minute:21,outId:28,inId:21},{id:1778541825007,minute:23,outId:1,inId:17},{id:1778541825008,minute:23,outId:3,inId:10},{id:1778541825009,minute:23,outId:7,inId:28},{id:1778541825010,minute:25,outId:20,inId:22},{id:1778541825011,minute:25,outId:21,inId:27},{id:1778541825012,minute:27,outId:23,inId:1},{id:1778541825013,minute:27,outId:29,inId:20},{id:1778541825014,minute:27,outId:10,inId:3},{id:1778541825015,minute:27,outId:28,inId:7},{id:1778541825016,minute:27,outId:26,inId:21},{id:1778541825017,minute:29,outId:17,inId:23}];
+    pushAlert("✓ Plan vs ITA cargado — "+S.pairs.length+" cambios","ok");
+  }
+}
+
 // ── FIH RIVALS ──
 const FIH_RIVALS=[
   {code:"NED",name:"Países Bajos"},{code:"BEL",name:"Bélgica"},{code:"AUS",name:"Australia"},
@@ -574,6 +582,7 @@ let pool=[
   {id:26,teamId:1,name:"MIRALLES Enric",number:80,position:"FWD",roles:{}},
   {id:27,teamId:1,name:"ROMAN Pablo",number:87,position:"FWD",roles:{"pcd1":1}},
   {id:28,teamId:1,name:"AGUIRREGOMEZCORTA Marco",number:90,position:"FWD",roles:{}},
+  {id:29,teamId:1,name:"BOZAL Oriol",number:71,position:"DEF",roles:{}},
   {id:101,teamId:2,name:"JUGADOR Uno",number:1,position:"GK",roles:{"gk":1}},
   {id:102,teamId:2,name:"JUGADOR Dos",number:2,position:"DEF",roles:{}}
 ];
@@ -2052,6 +2061,7 @@ function renderSetup(el){
       <button class="btn-secondary" onclick="openAddPlayer()">+ Jugador</button>
       <button class="btn-secondary" onclick="openSquadSelector()">Convocatoria</button>
       <button class="btn-secondary" onclick="openRoleEditor()">Roles</button>
+      <button class="btn-primary" style="background:#16a34a;min-height:40px;font-size:10px;padding:8px 14px" onclick="saveToStorage();pushAlert('✓ Plantilla guardada','ok')">💾 GUARDAR</button>
     </div>
   </div>
   <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
@@ -2261,7 +2271,7 @@ function renderPlan(el){
     ${inicioHTML}${groups||`<div class="empty">Sin cambios durante Q${APP.planQ}</div>`}`;
   }else if(APP.planTab==="grid"){body=buildGridHTML(g,-1,false);}
   else{const ph=squadPlayers().map(p=>{const m=g[p.id]?.filter(Boolean).length??0;const isU=S.unavailable.includes(p.id);return`<div style="padding:7px 10px;border:2px solid #e8e8f0;border-radius:9px;background:#fff"><div style="font-size:9px;color:#aaa">#${p.number} ${p.name.split(" ")[0]}</div><div style="font-size:16px;font-weight:800;color:${isU?"#C8102E":m>=45?"#16a34a":m>=30?"#555":"#d97706"};font-family:'JetBrains Mono',monospace">${isU?"BAJA":m+"'"}</div></div>`;}).join("");body=`<div style="display:flex;flex-wrap:wrap;gap:6px">${ph}</div>`;}
-  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div><div class="sec-title">PLAN · vs ${rivalCode()}</div>${mirrorMode?'<div style="font-size:10px;color:#16a34a;font-weight:700">✓ Q1=Q3 · Q2=Q4 activado</div>':'<div style="font-size:10px;color:#aaa">Modo independiente — 4 cuartos</div>'}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tabHtml}<button class="btn-danger" onclick="openContingency()">⚠ BAJA</button></div></div>${body}<button class="btn-primary" style="margin-top:16px" onclick="goScreen('match')">▶ IR AL PARTIDO</button>`;
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><div><div class="sec-title">PLAN · vs ${rivalCode()}</div>${mirrorMode?'<div style="font-size:10px;color:#16a34a;font-weight:700">✓ Q1=Q3 · Q2=Q4 activado</div>':'<div style="font-size:10px;color:#aaa">Modo independiente — 4 cuartos</div>'}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${tabHtml}<button class="btn-secondary" style="font-size:9px;border-color:#7c3aed;color:#7c3aed" onclick="loadItaliaPairs()">📋 Cargar plan ITA</button><button class="btn-danger" onclick="openContingency()">⚠ BAJA</button></div></div>${body}<button class="btn-primary" style="margin-top:16px" onclick="goScreen('match')">▶ IR AL PARTIDO</button>`;
   updatePairSelects();
 }
 function setPlanTab(t){APP.planTab=t;renderContent();}
