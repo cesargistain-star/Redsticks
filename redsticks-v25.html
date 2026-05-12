@@ -643,10 +643,10 @@ function bField(){
       }
       var rem=card?(Math.max(0,card.dur-(M.matchTime-card.at))):0;
       var col=card&&card.type==="yellow"?"#d97706":"#16a34a";
-      pbHtml+='<div onclick="pbReturn('+id+')" style="border-radius:7px;border:2px solid '+col+';background:#fff;padding:4px;margin-bottom:3px;cursor:pointer;text-align:center">';
+      pbHtml+='<div data-pbid="'+id+'" onclick="pbReturn('+id+')" style="border-radius:7px;border:2px solid '+col+';background:#fff;padding:4px;margin-bottom:3px;cursor:pointer;text-align:center">';
       pbHtml+='<div style="font-size:13px;font-weight:800;color:#C8102E;font-family:monospace">#'+p.number+'</div>';
       pbHtml+='<div style="font-size:7px;color:var(--t2)">'+p.name.split(" ")[0]+'</div>';
-      pbHtml+='<div style="font-size:10px;font-weight:800;color:'+col+';font-family:monospace">'+ft(rem)+'</div>';
+      pbHtml+='<div class="pb-cd" style="font-size:10px;font-weight:800;color:'+col+';font-family:monospace">'+ft(rem)+'</div>';
       pbHtml+='</div>';
     });
     pbHtml+='</div>';
@@ -671,6 +671,19 @@ function updToks(){
     var tile=document.getElementById("bt-"+p.id);if(!tile)return;
     var tm=tile.querySelector(".btm");if(tm)tm.textContent=ft(bchTime(p.id))+" / "+ft(plTime(p.id));
     tile.classList.toggle("bpi",pIn[p.id]?true:false);
+  });
+  // Update PB countdowns in place
+  M.pb.forEach(function(id){
+    var card=null;
+    for(var i=0;i<M.cards.length;i++){
+      if(M.cards[i].pid===id&&M.cards[i].type!=="red"){card=M.cards[i];break;}
+    }
+    var rem=card?Math.max(0,card.dur-(M.matchTime-card.at)):0;
+    var pbx=document.getElementById("pbx");
+    if(!pbx)return;
+    // Find the countdown div for this player - it's the 3rd div inside each pb token
+    var tokens=pbx.querySelectorAll("[data-pbid='"+id+"'] .pb-cd");
+    if(tokens[0])tokens[0].textContent=ft(rem);
   });
 }
 
