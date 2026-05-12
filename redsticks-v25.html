@@ -279,7 +279,7 @@ function renderSquad(el){
   const convocados=M.squad.length,campo=M.field.length,bench=convocados-campo;
   el.innerHTML=`
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-    <div><div class="sec-title">PLANTILLA · España Absoluta</div></div>
+    <div><div class="sec-lbl">PLANTILLA · España Absoluta</div></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn-p" style="background:var(--green);min-height:40px;font-size:10px;padding:8px 14px" onclick="save();toast('✓ Guardado','ok')">💾 GUARDAR</button>
       <button class="btn-s" onclick="openAddPlayer()">+ Jugador</button>
@@ -304,7 +304,7 @@ function renderSquad(el){
       ${inS&&!isU?`<button class="btn-s" style="width:100%;margin-top:7px;font-size:10px;padding:7px" onclick="toggleField(${p.id})">${inF?"→ BANQUILLO":"→ CAMPO"}</button>`:""}
     </div>`;
   }).join("")}</div>
-  <div style="margin-top:16px"><div class="sec-title">COBERTURA PC</div>
+  <div style="margin-top:16px"><div class="sec-lbl">COBERTURA PC</div>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:7px;margin-top:8px">
     ${DEF_ROLES.filter(r=>r.critical).map(r=>{
       const h=pool.filter(p=>M.field.includes(p.id)&&p.roles&&p.roles[r.id]!==undefined).sort((a,b)=>(a.roles[r.id]||99)-(b.roles[r.id]||99));
@@ -395,7 +395,7 @@ function openEditPlayer(id){
     <div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="ep-name" value="${p.name}"></div>
     <div class="frow"><label class="flbl">DORSAL</label><input class="finp" type="number" id="ep-num" value="${p.number}" style="max-width:90px;flex:none"></div>
     <div class="frow"><label class="flbl">POS</label><select class="finp" id="ep-pos" style="max-width:110px;flex:none">${["GK","DEF","MID","FWD"].map(pos=>`<option ${p.pos===pos?"selected":""}>${pos}</option>`).join("")}</select></div>
-    <div style="margin-top:12px"><div class="sec-title">ROLES PC</div>${rh}</div>
+    <div style="margin-top:12px"><div class="sec-lbl">ROLES PC</div>${rh}</div>
     <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
       <button class="btn-p" style="margin-top:0" onclick="savePlayer(${id})">GUARDAR</button>
       <button class="btn-s" onclick="closeModal()">CANCELAR</button>
@@ -980,7 +980,7 @@ function renderPlan(el){
 
   el.innerHTML=`
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-    <div><div class="sec-title">PLAN · vs ${M.rival.c}</div>${M.mirror?`<div style="font-size:10px;color:var(--green);font-weight:700">✓ Q1=Q3 · Q2=Q4</div>`:""}</div>
+    <div><div class="sec-lbl">PLAN · vs ${M.rival.c}</div>${M.mirror?`<div style="font-size:10px;color:var(--green);font-weight:700">✓ Q1=Q3 · Q2=Q4</div>`:""}</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn-s" style="font-size:9px;border-color:#7c3aed;color:#7c3aed" onclick="loadItaliaPairs()">📋 Plan ITA</button>
       <button class="btn-p" onclick="goTo('match')">▶ PARTIDO</button>
@@ -1015,14 +1015,14 @@ function renderReport(el){
   const subs=M.log.filter(e=>e.type==="sub");
   const fieldSecs=id=>{let t=0,inF=M.log.find(e=>e.type==="init")?.field?.includes(id)??false,last=0;M.log.filter(e=>e.type==="sub").forEach(e=>{if(e.outId===id&&inF){t+=e.sec-last;inF=false;last=e.sec;}if(e.inId===id&&!inF){inF=true;last=e.sec;}});if(inF)t+=M.matchTime-last;return t;};
   const allPlayed=M.squad.map(id=>({id,secs:fieldSecs(id)})).sort((a,b)=>b.secs-a.secs);
-  el.innerHTML=`<div class="sec-title">INFORME · ${espCode()} ${M.score.h}–${M.score.a} ${rivalCode()}</div>
+  el.innerHTML=`<div class="sec-lbl">INFORME · ${espCode()} ${M.score.h}–${M.score.a} ${rivalCode()}</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
     <div class="rep-card"><div class="slbl">CAMBIOS</div><div style="font-size:32px;font-weight:900;color:var(--red)">${subs.length}</div></div>
     <div class="rep-card"><div class="slbl">TIEMPO PARTIDO</div><div style="font-size:32px;font-weight:900;color:var(--navy)">${ft(M.matchTime)}</div></div>
   </div>
-  <div class="sec-title">TIEMPO JUGADO</div>
+  <div class="sec-lbl">TIEMPO JUGADO</div>
   ${allPlayed.map(({id,secs})=>{const p=gp(id);if(!p)return"";const pct=M.matchTime>0?Math.min(100,Math.round(secs/M.matchTime*100)):0;return`<div class="rep-card" style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:700">#${p.number} ${p.name}</span><span style="font-weight:800;font-family:'JetBrains Mono',monospace">${ft(secs)}</span></div><div class="rbar"><div class="rfill" style="width:${pct}%"></div></div></div>`;}).join("")}
-  <div class="sec-title" style="margin-top:16px">LOG DE CAMBIOS</div>
+  <div class="sec-lbl" style="margin-top:16px">LOG DE CAMBIOS</div>
   ${subs.map(e=>{const pO=gp(e.outId),pI=gp(e.inId);return`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f5f5f5"><span style="font-size:10px;color:var(--red);min-width:50px;font-weight:800;font-family:'JetBrains Mono',monospace">${ft(e.sec)}</span><div style="flex:1"><div style="font-size:12px;color:var(--red);font-weight:700">↑ #${pO?.number} ${pO?.name}</div><div style="font-size:12px;color:var(--green);font-weight:700">↓ #${pI?.number} ${pI?.name}</div></div></div>`;}).join("")}
   <button class="btn-p" style="margin-top:20px" onclick="if(confirm('¿Nuevo partido? Se borrará el estado actual.'))resetMatch()">NUEVO PARTIDO</button>`;
 }
@@ -1221,7 +1221,7 @@ function renderRight(){
           const isPend=_pendIn.has(p.id);
           const bt=benchTime(p.id),pt=playedTime(p.id);
           return`<div class="bench-tile ${isPend?"bench-pending-in":""}" id="btile-${p.id}" data-bid="${p.id}"
-            onclick="${isPend?`openPendingPanel(${p.id},false)`:""}"
+            onclick="${isPend?'openPendingPanel('+p.id+',false)':''}"
             style="cursor:${isPend?"pointer":"grab"}">
             <div style="text-align:center;min-width:26px">
               <div class="bench-num" style="color:${pc}">#${p.number}</div>
