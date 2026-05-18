@@ -369,6 +369,7 @@ var FIH = ['NED','BEL','AUS','GER','IND','ARG','GBR','ENG','PAK','MAS',
 // ── STATE ──
 var S = {
   squad:[], bench:[],
+  posDragged:{},
   roles:{}, pcVars:[], nextVid:1,
   pairs:[], mirror:true, curQ:1,
   rival:'ITA', phase:'pre', running:false,
@@ -396,14 +397,22 @@ function initDefaults(){
   if(gks.length) S.squad.push(gks[0].id);
   for(var i=10;i<16&&i<flds.length;i++) S.bench.push(flds[i].id);
   if(gks.length>1) S.bench.push(gks[1].id);
-  var xmap = {GK:7, DEF:22, MID:50, FWD:74};
+  // Position counters per line for organized layout
+  var lineX = {GK:6, DEF:22, MID:48, FWD:72};
+  var lineCount = {GK:0, DEF:0, MID:0, FWD:0};
+  var lineTotal = {GK:0, DEF:0, MID:0, FWD:0};
+  for(var i=0;i<POOL.length;i++) lineTotal[POOL[i].pos]=(lineTotal[POOL[i].pos]||0)+1;
   for(var i=0;i<POOL.length;i++){
     var p = POOL[i];
     S.roles[p.id] = {};
     var pr = p.roles || {};
     var keys = Object.keys(pr);
     for(var k=0;k<keys.length;k++) S.roles[p.id][keys[k]] = pr[keys[k]];
-    S.pos[p.id] = {x: xmap[p.pos]||50, y: 20+Math.random()*60};
+    var tot = lineTotal[p.pos]||1;
+    var idx = lineCount[p.pos]||0;
+    var ySpacing = 80 / (tot+1);
+    S.pos[p.id] = {x: lineX[p.pos]||50, y: 10 + (idx+1)*ySpacing};
+    lineCount[p.pos] = idx+1;
   }
 }
 
@@ -516,7 +525,11 @@ function setPTAB(btn){ PTAB=parseInt(btn.dataset.ti); renderPlantilla(); }
 function renderJugadores(){
   var posOrder=['GK','DEF','MID','FWD'];
   var posColors={GK:'#7c3aed',DEF:'var(--b)',MID:'var(--g)',FWD:'var(--r)'};
-  var h='<div style="display:flex;gap:6px;margin-bottom:12px">';
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
+  h+='<div style="font-size:9px;color:var(--t2)">'+POOL.length+' jugadores en el pool</div>';
+  h+='<button class="btn-r btn-sm" onclick="openAddPlayer()">+ NUEVO</button>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:6px;margin-bottom:12px">';
   h+='<div style="flex:1;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:8px;text-align:center">'+
      '<div style="font-size:20px;font-weight:900;color:var(--g);font-family:monospace">'+S.squad.length+'</div>'+
      '<div style="font-size:7px;color:var(--g);font-weight:700;letter-spacing:2px">CAMPO</div></div>';
@@ -569,9 +582,16 @@ function renderJugadores(){
 function cyclePlayer(el){
   var id=parseInt(el.dataset.pid); if(!id) return;
   var inf=S.squad.indexOf(id), ben=S.bench.indexOf(id);
-  if(inf>=0){ S.squad.splice(inf,1); S.bench.push(id); }
-  else if(ben>=0){ S.bench.splice(ben,1); }
-  else { S.bench.push(id); }
+  if(inf>=0){
+    // Campo -> Banquillo
+    S.squad.splice(inf,1); S.bench.push(id);
+  } else if(ben>=0){
+    // Banquillo -> No conv
+    S.bench.splice(ben,1);
+  } else {
+    // No conv -> Campo
+    S.squad.push(id);
+  }
   scheduleSave(); renderPlantilla();
 }
 
@@ -602,6 +622,50 @@ function savePlayer(btn){
   if(num&&parseInt(num.value)) p.num=parseInt(num.value);
   if(pos) p.pos=pos.value;
   closeModal(); scheduleSave(); renderPlantilla();
+}
+
+function openAddPlayer(){
+  var posOpts='';
+  var poss=['GK','DEF','MID','FWD'];
+  for(var i=0;i<poss.length;i++) posOpts+='<option value="'+poss[i]+'">'+poss[i]+'</option>';
+  openModal('<div class="modal-title">NUEVO JUGADOR</div>'+
+    '<div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="np-name" placeholder="Apellido Nombre"></div>'+
+    '<div class="frow"><label class="flbl">NICK</label><input class="finp" id="np-nick" placeholder="NICK (mayusculas)"></div>'+
+    '<div class="frow"><label class="flbl">DORSAL</label><input class="finp" type="number" id="np-num" placeholder="00" style="max-width:90px;flex:none"></div>'+
+    '<div class="frow"><label class="flbl">POS</label><select class="finp" id="np-pos" style="max-width:110px;flex:none">'+posOpts+'</select></div>'+
+    '<div class="frow"><label class="flbl">ESTADO</label><select class="finp" id="np-st" style="max-width:150px;flex:none">'+
+    '<option value="squad">Campo</option>'+
+    '<option value="bench">Banquillo</option>'+
+    '<option value="out">No conv.</option>'+
+    '</select></div>'+
+    '<div class="modal-acts">'+
+    '<button class="btn-r" style="flex:1" onclick="saveNewPlayer()">GUARDAR</button>'+
+    '<button class="btn-n" onclick="closeModal()">CANCELAR</button>'+
+    '</div>');
+}
+function saveNewPlayer(){
+  var name=document.getElementById('np-name'),
+      nick=document.getElementById('np-nick'),
+      num=document.getElementById('np-num'),
+      pos=document.getElementById('np-pos'),
+      st=document.getElementById('np-st');
+  var nameV=name?name.value.trim():'';
+  var nickV=nick?nick.value.trim().toUpperCase():'';
+  var numV=parseInt(num?num.value:'')||0;
+  var posV=pos?pos.value:'FWD';
+  var stV=st?st.value:'bench';
+  if(!nameV||!nickV||!numV) return toast('Rellena nombre, nick y dorsal','warn');
+  // Check dorsal not duplicated
+  for(var i=0;i<POOL.length;i++) if(POOL[i].num===numV) return toast('Dorsal #'+numV+' ya existe','warn');
+  var newId = Date.now();
+  var newP = {id:newId, num:numV, name:nameV, nick:nickV, pos:posV, roles:{}};
+  POOL.push(newP);
+  S.roles[newId]={};
+  S.pos[newId]={x:50,y:50};
+  if(stV==='squad') S.squad.push(newId);
+  else if(stV==='bench') S.bench.push(newId);
+  closeModal(); scheduleSave(); renderPlantilla();
+  toast(nickV+' anadido','ok');
 }
 
 function renderRoles(){
@@ -950,7 +1014,7 @@ function renderPartido(){
 function renderBench(){
   var bench=S.bench.filter(function(id){return S.squad.indexOf(id)<0;});
   if(!bench.length) return '';
-  var pending=isQ()?getPendingNow(qNum(),S.qElapsed):[];
+  var pending=isQ()?getAllPending(qNum(),S.qElapsed):[];
   var pendIn=pending.map(function(p){return p.inp;});
   var posColors={GK:'#7c3aed',DEF:'var(--b)',MID:'var(--g)',FWD:'var(--r)'};
   bench.sort(function(a,b){
@@ -980,17 +1044,19 @@ function renderBench(){
 function renderPending(){
   if(!isQ()) return '';
   var q=qNum(), elapsed=S.qElapsed;
-  var pending=getPendingNow(q,elapsed);
-  if(!pending.length) return '<div style="font-size:9px;color:var(--t2);padding:6px 0;margin-bottom:8px">Sin cambios pendientes en Q'+q+'</div>';
+  var pending=getAllPending(q,elapsed);
+  if(!pending.length) return '<div style="font-size:9px;color:var(--t2);padding:6px 0;margin-bottom:8px">Sin cambios programados en Q'+q+'</div>';
   var h='<div class="pend-widget"><div class="pend-hdr"><span class="pend-title">CAMBIOS PENDIENTES</span><span class="pend-count">'+pending.length+'</span></div>';
   for(var i=0;i<pending.length;i++){
     var p=pending[i], pO=gP(p.out), pI=gP(p.inp);
     var sl=p.secLeft;
     var isNow=sl<=0, isSoon=!isNow&&sl<=60;
     var cdCls=isNow?'pr-now':isSoon?'pr-soon':'pr-ok';
-    var cdTxt=isNow?'AHORA':ft(sl);
-    h+='<div class="pend-row'+(isNow?' pend-now':'')+'">';
-    h+='<span class="pr-cd '+cdCls+'">'+cdTxt+'</span>';
+    var cdTxt=isNow?'AHORA':(sl<0?'AHORA':ft(sl));
+    var cdLabel=(p.cd<10?'0':'')+p.cd+':00';
+    h+='<div class="pend-row'+(isNow?' pend-now':isSoon?' pend-now':'')+'">';
+    h+='<span class="pr-cd '+cdCls+'" style="min-width:52px">'+cdLabel+'</span>';
+    h+='<span style="font-size:9px;color:'+(isNow?'var(--r)':isSoon?'var(--a)':'var(--t3)')+';min-width:44px">'+cdTxt+'</span>';
     h+='<span class="pr-out">SALE #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+'</span>';
     h+='<span class="pr-sep">&#8594;</span>';
     h+='<span class="pr-in">ENTRA #'+(pI?pI.num:'?')+' '+(pI?pI.nick:'')+'</span>';
@@ -1001,7 +1067,8 @@ function renderPending(){
   return h;
 }
 
-function getPendingNow(q,elapsed){
+function getAllPending(q,elapsed){
+  // ALL unexecuted pairs for current quarter - for the widget
   var result=[];
   var srcQ=(S.mirror&&(q===3||q===4))?q-2:q;
   for(var i=0;i<S.pairs.length;i++){
@@ -1011,10 +1078,15 @@ function getPendingNow(q,elapsed){
     var execKey=(q===3||q===4)?mk:String(p.id);
     if(S.execIds.indexOf(execKey)>=0) continue;
     var sl=p.cd*60-elapsed;
-    if(sl<=90) result.push({pairId:p.id,out:p.out,inp:p.inp,cd:p.cd,mk:(q===3||q===4)?mk:'',secLeft:sl});
+    result.push({pairId:p.id,out:p.out,inp:p.inp,cd:p.cd,mk:(q===3||q===4)?mk:'',secLeft:sl});
   }
-  result.sort(function(a,b){return a.secLeft-b.secLeft;});
+  result.sort(function(a,b){return b.cd-a.cd;});
   return result;
+}
+function getPendingNow(q,elapsed){
+  // Only pairs in the 90s alert window - for toasts and token pulsing
+  var all=getAllPending(q,elapsed);
+  return all.filter(function(p){return p.secLeft<=90;});
 }
 
 function execPairBtn(btn){
@@ -1031,7 +1103,13 @@ function execPair(pairId,mk){
   if(S.execIds.indexOf(execKey)>=0) return;
   S.execIds.push(execKey);
   var oi=S.squad.indexOf(pair.out);
-  if(oi>=0){S.squad.splice(oi,1); if(S.squad.indexOf(pair.inp)<0) S.squad.push(pair.inp);}
+  if(oi>=0){
+    S.squad.splice(oi,1);
+    if(S.bench.indexOf(pair.out)<0) S.bench.push(pair.out);
+    if(S.squad.indexOf(pair.inp)<0) S.squad.push(pair.inp);
+    var bi=S.bench.indexOf(pair.inp);
+    if(bi>=0) S.bench.splice(bi,1);
+  }
   if(S.pos[pair.out]) S.pos[pair.inp]={x:S.pos[pair.out].x,y:S.pos[pair.out].y};
   S.log.push({type:'sub',sec:S.matchTime,outId:pair.out,inId:pair.inp});
   var pO=gP(pair.out),pI=gP(pair.inp);
@@ -1041,6 +1119,27 @@ function execPair(pairId,mk){
 }
 
 function buildField(){
+  // Assign line positions based on current squad
+  var lineX={GK:5,DEF:23,MID:50,FWD:75};
+  var byPos={GK:[],DEF:[],MID:[],FWD:[]};
+  for(var i=0;i<S.squad.length;i++){
+    var p=gP(S.squad[i]);
+    if(p&&byPos[p.pos]) byPos[p.pos].push(p.id);
+  }
+  var posKeys=['GK','DEF','MID','FWD'];
+  for(var pi=0;pi<posKeys.length;pi++){
+    var pos=posKeys[pi];
+    var ids=byPos[pos];
+    var n=ids.length;
+    for(var ii=0;ii<n;ii++){
+      var yStep=80/(n+1);
+      var newY=10+(ii+1)*yStep;
+      // Only set if not manually dragged (preserve dragged positions)
+      if(!S.posDragged[ids[ii]]){
+        S.pos[ids[ii]]={x:lineX[pos],y:newY};
+      }
+    }
+  }
   var fc='#1e4d1e';
   var svg='<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 100 60" preserveAspectRatio="none">';
   svg+='<rect width="100" height="60" fill="'+fc+'"/>';
@@ -1053,7 +1152,7 @@ function buildField(){
   svg+='<clipPath id="cl2"><rect x="75" y="1" width="24" height="58"/></clipPath>';
   svg+='<circle cx="99" cy="30" r="18" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" clip-path="url(#cl2)"/>';
   svg+='<circle cx="50" cy="30" r="0.5" fill="rgba(255,255,255,0.5)"/></svg>';
-  var pending=isQ()?getPendingNow(qNum(),S.qElapsed):[];
+  var pending=isQ()?getAllPending(qNum(),S.qElapsed):[];
   var pendOut=pending.map(function(p){return p.out;});
   var posClsMap={GK:'tok-gk',DEF:'tok-def',MID:'tok-mid',FWD:'tok-fwd'};
   var toks='';
@@ -1064,8 +1163,10 @@ function buildField(){
     var isPend=pendOut.indexOf(id)>=0;
     var cls='tok '+(posClsMap[p.pos]||'tok-mid')+(isPend?' tok-pend':'');
     var pt=playedTime(id);
-    toks+='<div class="'+cls+'" data-pid="'+id+'" onclick="tapToken(this)" '+
-          'style="left:calc('+ps.x+'% - 25px);top:calc('+ps.y+'% - 22px)">';
+    toks+='<div class="'+cls+'" data-pid="'+id+'" '+
+          'onclick="tapToken(this)" '+
+          'ontouchstart="tokTouchStart(event)" '+
+          'style="left:calc('+ps.x+'% - 25px);top:calc('+ps.y+'% - 22px);cursor:grab">';
     toks+='<div class="tok-num">#'+p.num+'</div>';
     toks+='<div class="tok-name">'+p.nick+'</div>';
     toks+='<div class="tok-time">'+ft(pt)+'</div>';
@@ -1076,7 +1177,7 @@ function buildField(){
 
 function tapToken(el){
   var id=parseInt(el.dataset.pid);
-  var pending=getPendingNow(qNum(),S.qElapsed);
+  var pending=getAllPending(qNum(),S.qElapsed);
   var pend=null;
   for(var i=0;i<pending.length;i++) if(pending[i].out===id){pend=pending[i];break;}
   if(pend){
@@ -1123,13 +1224,69 @@ function confirmManualSub(btn){
   var inId=el?parseInt(el.value):0;
   if(!inId) return toast('Selecciona quien entra','warn');
   var oi=S.squad.indexOf(outId);
-  if(oi>=0){S.squad.splice(oi,1); if(S.squad.indexOf(inId)<0) S.squad.push(inId);}
+  if(oi>=0){
+    S.squad.splice(oi,1);
+    if(S.bench.indexOf(outId)<0) S.bench.push(outId);
+    if(S.squad.indexOf(inId)<0) S.squad.push(inId);
+    var bi=S.bench.indexOf(inId);
+    if(bi>=0) S.bench.splice(bi,1);
+  }
   if(S.pos[outId]) S.pos[inId]={x:S.pos[outId].x,y:S.pos[outId].y};
   S.log.push({type:'sub',sec:S.matchTime,outId:outId,inId:inId,sit:'manual'});
   var pO=gP(outId),pI=gP(inId);
   toast('MANUAL: #'+(pO?pO.num:'?')+' -> #'+(pI?pI.num:'?'),'ok');
   closeModal(); scheduleSave(); if(CUR_SCR===2) renderPartido();
 }
+
+// ── TOKEN DRAG (document-level listeners) ──
+var _drag={id:null,el:null,fw:null,moved:false,ox:0,oy:0};
+
+function tokTouchStart(e){
+  var el=e.currentTarget;
+  if(e.cancelable) e.preventDefault();
+  _drag.id=parseInt(el.dataset.pid);
+  _drag.el=el;
+  _drag.moved=false;
+  _drag.fw=document.querySelector('.field-wrap');
+  if(!_drag.fw) return;
+  var t=e.touches[0];
+  var fr=_drag.fw.getBoundingClientRect();
+  _drag.ox=t.clientX-fr.left-el.offsetWidth/2;
+  _drag.oy=t.clientY-fr.top-el.offsetHeight/2;
+  el.style.zIndex='20';
+}
+function _onTouchMove(e){
+  if(_drag.id===null||!_drag.fw) return;
+  if(e.cancelable) e.preventDefault();
+  _drag.moved=true;
+  var t=e.touches[0];
+  var fr=_drag.fw.getBoundingClientRect();
+  var x=t.clientX-fr.left-_drag.el.offsetWidth/2;
+  var y=t.clientY-fr.top-_drag.el.offsetHeight/2;
+  var px=Math.max(0,Math.min(fr.width-_drag.el.offsetWidth,x));
+  var py=Math.max(0,Math.min(fr.height-_drag.el.offsetHeight,y));
+  _drag.el.style.left=px+'px';
+  _drag.el.style.top=py+'px';
+  S.pos[_drag.id]={
+    x:Math.round((px+_drag.el.offsetWidth/2)/fr.width*100),
+    y:Math.round((py+_drag.el.offsetHeight/2)/fr.height*100)
+  };
+  S.posDragged[_drag.id]=1;
+}
+function _onTouchEnd(e){
+  if(_drag.id===null) return;
+  if(!_drag.moved){ tapToken(_drag.el); }
+  _drag.el.style.zIndex='';
+  _drag.id=null; _drag.el=null; _drag.fw=null;
+  scheduleSave();
+}
+document.addEventListener('touchmove',_onTouchMove,{passive:false});
+document.addEventListener('touchend',_onTouchEnd);
+
+// Keep old names as no-ops so HTML refs don't break
+function tokDragStart(e,el){}
+function tokDragMove(e,el){}
+function tokDragEnd(e,el){}
 
 function playedTime(id){
   var t=0,inF=false,last=0;
@@ -1241,23 +1398,8 @@ function startTmr(){
 function stopTmr(){clearInterval(tiInt);}
 
 function updateMatchTimes(){
-  var pending=getPendingNow(qNum(),S.qElapsed);
-  var pendOut=pending.map(function(p){return p.out;});
-  document.querySelectorAll('[data-pid]').forEach(function(el){
-    var id=parseInt(el.dataset.pid);
-    if(el.classList.contains('tok')){
-      el.classList.toggle('tok-pend',pendOut.indexOf(id)>=0);
-      var tt=el.querySelector('.tok-time');
-      if(tt) tt.textContent=ft(playedTime(id));
-    }
-  });
-  // Refresh pending widget
-  var pw=document.querySelector('.pend-widget');
-  if(pw){
-    var tmp=document.createElement('div');
-    tmp.innerHTML=renderPending();
-    if(tmp.firstChild) pw.parentNode.replaceChild(tmp.firstChild,pw);
-  }
+  // Full re-render of partido screen every second for accuracy
+  renderPartido();
 }
 
 function startQ(){
@@ -1293,7 +1435,12 @@ function endQ(){
   for(var i=0;i<initPairs.length;i++){
     var p=initPairs[i];
     var oi=S.squad.indexOf(p.out);
-    if(oi>=0){S.squad.splice(oi,1);if(S.squad.indexOf(p.inp)<0)S.squad.push(p.inp);}
+    if(oi>=0){
+      S.squad.splice(oi,1);
+      if(S.bench.indexOf(p.out)<0) S.bench.push(p.out);
+      if(S.squad.indexOf(p.inp)<0) S.squad.push(p.inp);
+      var bi=S.bench.indexOf(p.inp); if(bi>=0) S.bench.splice(bi,1);
+    }
     if(S.pos[p.out]) S.pos[p.inp]={x:S.pos[p.out].x,y:S.pos[p.out].y};
     S.log.push({type:'sub',sec:S.matchTime,outId:p.out,inId:p.inp,sit:'inicio_q'+nextQNum});
     S.execIds.push(String(p.id));
@@ -1322,7 +1469,12 @@ function autoEndQ(){
   for(var i=0;i<initPairs.length;i++){
     var p=initPairs[i];
     var oi=S.squad.indexOf(p.out);
-    if(oi>=0){S.squad.splice(oi,1);if(S.squad.indexOf(p.inp)<0)S.squad.push(p.inp);}
+    if(oi>=0){
+      S.squad.splice(oi,1);
+      if(S.bench.indexOf(p.out)<0) S.bench.push(p.out);
+      if(S.squad.indexOf(p.inp)<0) S.squad.push(p.inp);
+      var bi=S.bench.indexOf(p.inp); if(bi>=0) S.bench.splice(bi,1);
+    }
     if(S.pos[p.out]) S.pos[p.inp]={x:S.pos[p.out].x,y:S.pos[p.out].y};
     S.log.push({type:'sub',sec:S.matchTime,outId:p.out,inId:p.inp,sit:'inicio_q'+nextQNum});
     S.execIds.push(String(p.id));
@@ -1501,7 +1653,7 @@ function doSave(){
     var ea=[];
     for(var i=0;i<S.execIds.length;i++) ea.push(S.execIds[i]);
     localStorage.setItem(LS,JSON.stringify({
-      squad:S.squad,bench:S.bench,roles:S.roles,pcVars:S.pcVars,nextVid:S.nextVid,
+      squad:S.squad,bench:S.bench,roles:S.roles,pcVars:S.pcVars,nextVid:S.nextVid,posDragged:S.posDragged,
       pairs:S.pairs,mirror:S.mirror,rival:S.rival,
       phase:S.phase,qElapsed:S.qElapsed,matchTime:S.matchTime,breakCd:S.breakCd,
       score:S.score,qLog:S.qLog,log:S.log,execIds:ea,
@@ -1515,7 +1667,7 @@ function doLoad(){
     var d=JSON.parse(raw);
     var keys=['squad','bench','roles','pcVars','nextVid','pairs','mirror','rival',
                'phase','qElapsed','matchTime','breakCd','score','qLog','log',
-               'execIds','alerted','cards','pb','events','pos'];
+               'execIds','alerted','cards','pb','events','pos','posDragged'];
     for(var i=0;i<keys.length;i++){
       var k=keys[i];
       if(d[k]!==undefined) S[k]=d[k];
