@@ -1014,7 +1014,7 @@ function renderPartido(){
 function renderBench(){
   var bench=S.bench.filter(function(id){return S.squad.indexOf(id)<0;});
   if(!bench.length) return '';
-  var pending=isQ()?getAllPending(qNum(),S.qElapsed):[];
+  var q2=isQ()?qNum():1; var el2=isQ()?S.qElapsed:0; var pending=getAllPending(q2,el2);
   var pendIn=pending.map(function(p){return p.inp;});
   var posColors={GK:'#7c3aed',DEF:'var(--b)',MID:'var(--g)',FWD:'var(--r)'};
   bench.sort(function(a,b){
@@ -1042,8 +1042,9 @@ function renderBench(){
 }
 
 function renderPending(){
-  if(!isQ()) return '';
-  var q=qNum(), elapsed=S.qElapsed;
+  // Show Q1 plan even before game starts
+  var q = isQ() ? qNum() : 1;
+  var elapsed = isQ() ? S.qElapsed : 0;
   var pending=getAllPending(q,elapsed);
   if(!pending.length) return '<div style="font-size:9px;color:var(--t2);padding:6px 0;margin-bottom:8px">Sin cambios programados en Q'+q+'</div>';
   var h='<div class="pend-widget"><div class="pend-hdr"><span class="pend-title">CAMBIOS PENDIENTES</span><span class="pend-count">'+pending.length+'</span></div>';
@@ -1152,7 +1153,7 @@ function buildField(){
   svg+='<clipPath id="cl2"><rect x="75" y="1" width="24" height="58"/></clipPath>';
   svg+='<circle cx="99" cy="30" r="18" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" clip-path="url(#cl2)"/>';
   svg+='<circle cx="50" cy="30" r="0.5" fill="rgba(255,255,255,0.5)"/></svg>';
-  var pending=isQ()?getAllPending(qNum(),S.qElapsed):[];
+  var q2=isQ()?qNum():1; var el2=isQ()?S.qElapsed:0; var pending=getAllPending(q2,el2);
   var pendOut=pending.map(function(p){return p.out;});
   var posClsMap={GK:'tok-gk',DEF:'tok-def',MID:'tok-mid',FWD:'tok-fwd'};
   var toks='';
@@ -1177,7 +1178,7 @@ function buildField(){
 
 function tapToken(el){
   var id=parseInt(el.dataset.pid);
-  var pending=getAllPending(qNum(),S.qElapsed);
+  var tq=isQ()?qNum():1; var te=isQ()?S.qElapsed:0; var pending=getAllPending(tq,te);
   var pend=null;
   for(var i=0;i<pending.length;i++) if(pending[i].out===id){pend=pending[i];break;}
   if(pend){
