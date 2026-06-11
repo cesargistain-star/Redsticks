@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>RedSticks · ESP Absoluta</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --r:#C8102E;--n:#16213e;--g:#16a34a;--a:#f59e0b;--b:#2563eb;--p:#7c3aed;
+  --bd:#dde1ef;--bg:#f0f2f8;--card:#ffffff;
+  --t:#16213e;--t2:#5a6080;--t3:#a0a8c0;
+}
+html,body{height:100%;background:var(--bg);color:var(--t);font-family:'Barlow Condensed',sans-serif;overflow:hidden}
+button,select,input{font-family:'Barlow Condensed',sans-serif;-webkit-appearance:none;touch-action:manipulation;outline:none}
+button{cursor:pointer}
+select,input{color:var(--t);background:var(--card);border:1.5px solid var(--bd)}
+
+/* ── APP SHELL ── */
+#app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── HEADER ── */
+#hdr{background:var(--n);padding:7px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.logo{font-size:19px;font-weight:900;letter-spacing:4px;color:#fff;line-height:1}
+.logo em{color:var(--r);font-style:normal}
+.logo-sub{font-size:7px;color:#6a7090;letter-spacing:2px;margin-top:1px}
+.hdr-mid{flex:1;display:none;align-items:center;justify-content:center;gap:14px}
+.hdr-mid-on{display:flex}
+.sc-wrap{display:flex;align-items:center;gap:5px}
+.sc-team{font-size:8px;color:#888;letter-spacing:2px;font-weight:700;text-align:center}
+.sc-num{font-size:26px;font-weight:900;color:#fff;font-family:monospace;width:28px;text-align:center;line-height:1}
+.sc-sep{font-size:18px;color:#444;margin:0 2px}
+.sc-adj{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#aaa;width:22px;height:22px;border-radius:5px;font-size:13px;display:flex;align-items:center;justify-content:center}
+.tmr-wrap{display:flex;flex-direction:column;align-items:center}
+.tmr{font-size:26px;font-weight:900;font-family:monospace;color:#4ade80;letter-spacing:2px;line-height:1}
+.tmr-phase{font-size:7px;color:#888;letter-spacing:2px;font-weight:700;margin-top:1px}
+.qpips{display:flex;gap:3px;margin-top:2px}
+.qpip{width:18px;height:4px;border-radius:2px;background:#333}
+.qpip-a{background:var(--r)}.qpip-d{background:var(--g)}
+.riv-btn{margin-left:auto;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);color:#aaa;padding:5px 10px;font-size:8px;font-weight:700;border-radius:6px;letter-spacing:1px}
+
+/* ── TABS ── */
+#tabs{background:var(--n);display:flex;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06)}
+.tab{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:#666;padding:9px 4px;font-size:9px;letter-spacing:2px;font-weight:800;cursor:pointer;margin-bottom:-1px}
+.tab-a{border-bottom-color:var(--r);color:#fff}
+
+/* ── BREAK BANNER ── */
+#brk{display:none;background:#eff6ff;border-bottom:2px solid rgba(37,99,235,.3);padding:10px 16px;align-items:center;gap:12px;flex-shrink:0}
+.brk-info{flex:1}
+.brk-title{font-size:11px;font-weight:800;color:var(--b);letter-spacing:2px}
+.brk-sub{font-size:9px;color:var(--t2);margin-top:2px}
+.brk-tmr{font-size:32px;font-weight:900;color:var(--b);font-family:monospace}
+.brk-btn{background:var(--b);border:none;color:#fff;padding:10px 16px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;min-height:42px}
+
+/* ── SCREENS ── */
+#screens{flex:1;overflow:hidden;position:relative}
+.scr{position:absolute;inset:0;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px 32px}
+.scr-on{display:block}
+.scr-flex{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.scr-flex-on{display:flex}
+
+/* ── COMMON ── */
+.lbl{font-size:7px;letter-spacing:3px;color:var(--t3);font-weight:800;text-transform:uppercase;margin-bottom:8px;margin-top:14px;display:block}
+.lbl:first-child{margin-top:0}
+.card{background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px}
+.btn-r{background:var(--r);border:none;color:#fff;padding:11px 18px;font-size:10px;letter-spacing:2px;font-weight:800;border-radius:8px;min-height:44px}
+.btn-n{background:var(--card);border:1.5px solid var(--bd);color:var(--t);padding:9px 14px;font-size:10px;font-weight:700;border-radius:8px;min-height:40px}
+.btn-sm{padding:6px 12px;font-size:9px;min-height:32px;border-radius:6px}
+.finp{background:var(--card);border:1.5px solid var(--bd);color:var(--t);padding:9px 12px;font-size:13px;border-radius:8px;min-height:42px;width:100%}
+.frow{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.flbl{font-size:8px;letter-spacing:2px;color:var(--t2);width:52px;flex-shrink:0;font-weight:700}
+
+/* ── PLANTILLA ── */
+.sub-tabs{display:flex;border-bottom:1.5px solid var(--bd);margin-bottom:12px}
+.stab{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--t2);padding:9px 4px;font-size:9px;font-weight:800;letter-spacing:1px;cursor:pointer;margin-bottom:-2px}
+.stab-a{border-bottom-color:var(--r);color:var(--t)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px;margin-bottom:10px}
+.ptile{background:var(--card);border:1.5px solid var(--bd);border-radius:9px;padding:8px 10px;cursor:pointer;transition:transform .1s}
+.ptile:active{transform:scale(.96)}
+.ptile-f{border-color:var(--g);background:#f0fdf4}
+.ptile-b{border-color:var(--a);background:#fffbeb}
+.ptile-o{opacity:.32}
+.pt-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.pt-num{font-size:20px;font-weight:900;color:var(--r);font-family:monospace;line-height:1}
+.pt-edit{background:none;border:none;color:var(--t3);font-size:15px;cursor:pointer;padding:2px 4px}
+.pt-name{font-size:11px;font-weight:700;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.pt-pos{font-size:7px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:1px;display:inline-block}
+.pos-GK{background:rgba(124,58,237,.15);color:#7c3aed;border:1px solid rgba(124,58,237,.3)}
+.pos-DEF{background:rgba(37,99,235,.12);color:var(--b);border:1px solid rgba(37,99,235,.25)}
+.pos-MID{background:rgba(22,163,74,.12);color:var(--g);border:1px solid rgba(22,163,74,.25)}
+.pos-FWD{background:rgba(200,16,46,.1);color:var(--r);border:1px solid rgba(200,16,46,.2)}
+.pt-st{font-size:7px;font-weight:800;padding:2px 7px;border-radius:10px;margin-top:5px;display:inline-block;letter-spacing:1px}
+.st-f{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.st-b{background:#fef9c3;color:#a16207;border:1px solid #fde68a}
+.st-o{background:#f1f5f9;color:#94a3b8;border:1px solid #e2e8f0}
+.roles-tbl{width:100%;border-collapse:collapse;font-size:10px}
+.roles-tbl th{background:#f4f5f8;color:var(--t2);padding:6px 4px;font-size:7px;letter-spacing:1px;font-weight:800;text-align:center;border-bottom:1.5px solid var(--bd)}
+.roles-tbl th:first-child{text-align:left;padding-left:10px}
+.roles-tbl td{padding:5px 4px;text-align:center;border-bottom:1px solid #f0f2f8}
+.roles-tbl td:first-child{text-align:left;padding-left:10px;font-weight:700}
+.rk{display:inline-block;padding:2px 7px;border-radius:4px;font-size:9px;font-weight:800;cursor:pointer;min-width:22px}
+.rk1{background:var(--a);color:#000}
+.rk2{background:#fef9c3;color:#a16207;border:1px solid #fde68a}
+.rk3{background:#f1f5f9;color:var(--t2);border:1px solid var(--bd)}
+.rk0{color:var(--t3);font-size:16px;cursor:pointer}
+.var-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.var-card{background:var(--card);border-radius:10px;padding:10px 12px;cursor:pointer;border:1.5px solid}
+.vc-d{border-color:rgba(37,99,235,.4);background:#eff6ff}
+.vc-v{border-color:rgba(124,58,237,.4);background:#f5f3ff}
+.vc-rank{font-size:7px;font-weight:800;letter-spacing:1px;margin-bottom:3px}
+.vc-name{font-size:13px;font-weight:900;margin-bottom:5px}
+.vc-pips{display:flex;flex-wrap:wrap;gap:3px}
+.pip{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;color:#fff}
+.pip-d{background:var(--b)}.pip-v{background:var(--p)}
+
+/* ── PROGRAMA ── */
+.prog-hdr{background:var(--card);border-bottom:1.5px solid var(--bd);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0;position:sticky;top:0;z-index:5}
+.qsbtn{background:var(--bg);border:1.5px solid var(--bd);color:var(--t2);padding:6px 12px;font-size:9px;font-weight:800;border-radius:6px;letter-spacing:1px}
+.qsbtn-a{background:var(--r);border-color:var(--r);color:#fff}
+.mir-btn{background:none;border:1.5px solid var(--g);color:var(--g);padding:6px 10px;font-size:8px;font-weight:800;border-radius:6px;letter-spacing:1px}
+.mir-off{border-color:var(--bd);color:var(--t2)}
+.tl-bar{display:flex;gap:3px;margin-bottom:6px}
+.tl-min{flex:1;min-height:50px;border-radius:7px;background:var(--card);border:1.5px solid var(--bd);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s}
+.tl-min:active{transform:scale(.9)}
+.tl-min-cd{font-size:8px;font-weight:800;color:var(--t2);font-family:monospace}
+.tl-min-n{font-size:11px;font-weight:900;color:var(--a)}
+.tl-has{background:#fffbeb;border-color:var(--a)}
+.tl-start{background:#fff0f0;border:1.5px solid rgba(200,16,46,.35);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.chg-item{background:var(--card);border:1.5px solid var(--bd);border-radius:9px;padding:9px 12px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.chg-t{font-size:12px;font-weight:800;color:var(--a);min-width:44px;font-family:monospace}
+.chg-out{font-size:12px;color:var(--r);font-weight:800}
+.chg-in{font-size:12px;color:var(--g);font-weight:800}
+.chg-arr{color:var(--t3);font-size:11px}
+.chg-del{background:none;border:none;color:var(--t3);font-size:18px;margin-left:auto;padding:2px 6px;cursor:pointer}
+
+/* ── PARTIDO ── */
+.match-body{padding:10px 14px 32px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.mb-cols{display:flex;flex-direction:column;gap:0}
+.mb-left{width:100%}
+.mb-right{width:100%}
+@media (orientation:landscape) and (min-width:780px){
+  .mb-cols{display:flex;flex-direction:row;gap:12px;align-items:flex-start}
+  .mb-left{width:60%;flex-shrink:0}
+  .mb-right{width:40%;max-height:calc(100vh - 140px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .field-wrap{aspect-ratio:91.4/50}
+}
+.ctrl-row{display:flex;gap:6px;margin-bottom:10px}
+.ctrl-play{background:#f0fdf4;border:1.5px solid var(--g);color:var(--g);padding:10px 16px;font-size:10px;font-weight:800;border-radius:8px;min-height:42px;letter-spacing:1px;flex:1}
+.ctrl-pause{background:#fffbeb;border:1.5px solid var(--a);color:#92400e;padding:10px 16px;font-size:10px;font-weight:800;border-radius:8px;min-height:42px;letter-spacing:1px;flex:1}
+.ctrl-end{background:#fff0f0;border:1.5px solid var(--r);color:var(--r);padding:10px 16px;font-size:10px;font-weight:800;border-radius:8px;min-height:42px;letter-spacing:1px}
+.pend-box{background:var(--card);border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.pend-hdr{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid var(--bd);background:#f8f9fc;gap:8px}
+.pend-lbl{font-size:8px;font-weight:800;letter-spacing:2px;color:var(--t2)}
+.pend-cnt{background:var(--r);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:10px}
+.pend-row{display:flex;align-items:center;gap:7px;padding:8px 12px;border-bottom:1px solid #f4f6fb}
+.pend-row:last-child{border-bottom:none}
+.pend-now{background:#fff5f5}
+.pr-min{font-size:11px;font-weight:800;min-width:42px;font-family:monospace;color:var(--t2)}
+.pr-sl{font-size:9px;min-width:40px;font-family:monospace}
+.pr-sl-now{color:var(--r);font-weight:800}
+.pr-sl-soon{color:var(--a);font-weight:800}
+.pr-sl-ok{color:var(--t3)}
+.pr-out{font-size:12px;font-weight:800;color:var(--r)}
+.pr-in{font-size:12px;font-weight:800;color:var(--g)}
+.pr-arr{color:var(--t3);font-size:11px}
+.pr-exec{background:var(--r);border:none;color:#fff;padding:6px 12px;border-radius:7px;font-size:10px;font-weight:800;cursor:pointer;margin-left:auto;min-height:34px;letter-spacing:1px}
+.field-wrap{width:100%;aspect-ratio:91.4/40;position:relative;border-radius:10px;overflow:visible;margin-bottom:8px}
+.tok{position:absolute;width:48px;height:42px;border-radius:8px;border:2px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;user-select:none;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.tok-num{font-size:12px;font-weight:800;line-height:1;font-family:monospace}
+.tok-nick{font-size:6px;font-weight:700;max-width:44px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.tok-t{font-size:6px;opacity:.85;font-family:monospace}
+.tok-gk{background:#7c3aed;border-color:#6d28d9}
+.tok-def{background:var(--b);border-color:#1d4ed8}
+.tok-mid{background:var(--g);border-color:#15803d}
+.tok-fwd{background:var(--r);border-color:#991b1b}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 2px 6px rgba(0,0,0,.18)}50%{transform:scale(1.1);box-shadow:0 0 0 5px rgba(245,158,11,.35)}}
+.tok-pend{animation:pulse .85s ease infinite;border-color:var(--a)!important;border-width:3px!important}
+.bench-box{background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:10px}
+.bench-hdr{font-size:8px;font-weight:800;letter-spacing:2px;color:var(--t2);margin-bottom:8px}
+.bench-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f4f6fb}
+.bench-row:last-child{border-bottom:none}
+.bench-num{font-size:13px;font-weight:800;min-width:30px;font-family:monospace}
+.bench-name{font-size:11px;font-weight:700;flex:1}
+.bench-in{font-size:8px;color:var(--g);font-weight:800;letter-spacing:1px}
+.ev-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+.ev-btn{padding:9px 4px;border-radius:9px;border:1.5px solid;font-size:10px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px;background:var(--card)}
+.ev-sub{font-size:7px;opacity:.65;font-weight:600}
+.ev-pcp{border-color:var(--b);color:var(--b)}
+.ev-pcn{border-color:var(--a);color:var(--a)}
+.ev-gp{border-color:var(--g);color:var(--g)}
+.ev-gn{border-color:var(--r);color:var(--r)}
+
+/* ── PC PANEL ── */
+#pc-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:400;align-items:center;justify-content:center;padding:16px}
+.pc-box{background:var(--card);border:1.5px solid var(--bd);border-radius:14px;padding:18px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.pc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pc-ttl{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--b)}
+.pc-cls{background:none;border:none;color:var(--t2);font-size:22px;cursor:pointer;padding:2px 8px}
+.pc-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pc-col-lbl{font-size:8px;font-weight:800;letter-spacing:2px;margin-bottom:8px;display:block}
+.pc-item{border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer;border:1.5px solid}
+.pc-item:active{transform:scale(.97)}
+.pc-d{background:#eff6ff;border-color:rgba(37,99,235,.4)}
+.pc-v{background:#f5f3ff;border-color:rgba(124,58,237,.4)}
+.pc-na{opacity:.38;cursor:default}
+.pc-rank{font-size:7px;font-weight:800;margin-bottom:3px}
+.pc-name{font-size:14px;font-weight:900;margin-bottom:5px}
+
+/* ── MODAL ── */
+#mod-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:500;padding:16px}
+.mod-box{background:var(--card);border:1.5px solid var(--bd);border-radius:14px;padding:20px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.mod-ttl{font-size:12px;font-weight:800;letter-spacing:2px;color:var(--t);margin-bottom:14px}
+.mod-acts{display:flex;gap:8px;margin-top:14px}
+
+/* ── TOASTS ── */
+#toasts{position:fixed;top:8px;right:8px;z-index:600;display:flex;flex-direction:column;gap:4px;max-width:280px;pointer-events:none}
+.toast{padding:8px 12px;border-radius:9px;font-size:11px;font-weight:700;pointer-events:all;box-shadow:0 4px 16px rgba(0,0,0,.1);display:flex;align-items:center;gap:8px;border:1.5px solid}
+.t-ok{background:#f0fdf4;border-color:var(--g);color:#15803d}
+.t-warn{background:#fffbeb;border-color:var(--a);color:#92400e}
+.t-urgent{background:#fff0f0;border-color:var(--r);color:var(--r)}
+.t-info{background:#eff6ff;border-color:var(--b);color:var(--b)}
+.t-x{background:none;border:none;color:inherit;font-size:15px;margin-left:auto;cursor:pointer}
+
+/* ── INFORME ── */
+.inf-row{background:var(--card);border:1.5px solid var(--bd);border-radius:9px;padding:9px 12px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.inf-bar-wrap{height:5px;background:#f0f2f8;border-radius:4px;flex:1;overflow:hidden}
+.inf-bar-fill{height:100%;background:linear-gradient(90deg,var(--r),var(--a));border-radius:4px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="toasts"></div>
+  <div id="pc-panel" onclick="if(event.target===this)closePCP()"><div class="pc-box" id="pc-box"></div></div>
+  <div id="mod-bg" onclick="if(event.target===this)closeMod()"><div class="mod-box" id="mod-box" onclick="event.stopPropagation()"></div></div>
+
+  <header id="hdr">
+    <div><div class="logo">RED<em>STICKS</em></div><div class="logo-sub">ESP ABSOLUTA</div></div>
+    <div class="hdr-mid" id="hdr-mid">
+      <div class="sc-wrap">
+        <div>
+          <div class="sc-team">ESP</div>
+          <div style="display:flex;align-items:center;gap:3px">
+            <button class="sc-adj" onclick="adjSc(0,-1)">-</button>
+            <div class="sc-num" id="sc-h">0</div>
+            <button class="sc-adj" onclick="adjSc(0,1)">+</button>
+          </div>
+        </div>
+        <div class="sc-sep">-</div>
+        <div>
+          <div class="sc-team" id="riv-lbl">RIV</div>
+          <div style="display:flex;align-items:center;gap:3px">
+            <button class="sc-adj" onclick="adjSc(1,-1)">-</button>
+            <div class="sc-num" id="sc-a">0</div>
+            <button class="sc-adj" onclick="adjSc(1,1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="tmr-wrap">
+        <div class="tmr" id="tmr">15:00</div>
+        <div class="tmr-phase" id="tmr-phase">PRE-PARTIDO</div>
+        <div class="qpips" id="qpips"></div>
+      </div>
+    </div>
+    <button class="riv-btn" id="riv-btn" onclick="openRivMod()">ESP vs ?</button>
+  </header>
+
+  <div id="tabs">
+    <button class="tab tab-a" onclick="go(0)">PLANTILLA</button>
+    <button class="tab" onclick="go(1)">PROGRAMA</button>
+    <button class="tab" onclick="go(2)">PARTIDO</button>
+    <button class="tab" onclick="go(3)">INFORME</button>
+  </div>
+
+  <div id="brk">
+    <div class="brk-info">
+      <div class="brk-title" id="brk-title">DESCANSO</div>
+      <div class="brk-sub" id="brk-sub"></div>
+    </div>
+    <div class="brk-tmr" id="brk-tmr">02:00</div>
+    <button class="brk-btn" id="brk-btn" onclick="startNextQ()">INICIAR Q2</button>
+  </div>
+
+  <div id="screens">
+    <div class="scr scr-on" id="s0"><div id="pl-content"></div></div>
+    <div class="scr" id="s1" style="padding:0">
+      <div class="prog-hdr">
+        <div id="qsel" style="display:flex;gap:4px"></div>
+        <button class="mir-btn" id="mir-btn" onclick="toggleMir()">Q1=Q3 Q2=Q4</button>
+        <span style="font-size:8px;color:var(--t2);margin-left:auto" id="prog-info"></span>
+      </div>
+      <div style="padding:12px 14px 32px;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch" id="prog-body"></div>
+    </div>
+    <div class="scr-flex" id="s2">
+      <div class="match-body" id="match-body"></div>
+    </div>
+    <div class="scr" id="s3"><div id="inf-content"></div></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// REDSTICKS v27 · ESP ABSOLUTA
+// Rules: single-quote outer strings · numeric onclick args
+//        for-loops for HTML · no backticks · node-validated
+// ══════════════════════════════════════════════════
+
+// ── POOL ──
+var POOL = [
+  {id:2,  num:2,  name:'ALONSO Alejandro',  nick:'ALEX',     pos:'DEF', roles:{}},
+  {id:5,  num:5,  name:'BONASTRE Jordi',    nick:'BONASTRE', pos:'DEF', roles:{}},
+  {id:6,  num:6,  name:'GISPERT Xavier',    nick:'XAVI',     pos:'MID', roles:{pca_p:2}},
+  {id:7,  num:7,  name:'VILALLONGA Rafael', nick:'RAFA',     pos:'MID', roles:{}},
+  {id:8,  num:8,  name:'RECASENS Marc',     nick:'RECASENS', pos:'DEF', roles:{pcd4:1,pca_t:2}},
+  {id:9,  num:9,  name:'LACALLE Borja',     nick:'LACALLE',  pos:'FWD', roles:{pcd1:1}},
+  {id:10, num:10, name:'BASTERRA Jose',     nick:'CHEFO',    pos:'FWD', roles:{pca_t:3}},
+  {id:11, num:11, name:'CLAPES Gerard',     nick:'CLAPES',   pos:'FWD', roles:{pcd1:3}},
+  {id:12, num:12, name:'REYNE Marc',        nick:'REYNE',    pos:'FWD', roles:{pcd1:2}},
+  {id:13, num:13, name:'DE IGNACIO Eduard', nick:'EDU',      pos:'MID', roles:{}},
+  {id:14, num:14, name:'MIRALLES Marc',     nick:'MARCMI',   pos:'MID', roles:{pca_t:2}},
+  {id:15, num:15, name:'CALZADO Luis',      nick:'CALZADO',  pos:'GK',  roles:{gk:1}},
+  {id:16, num:16, name:'REVILLA Rafael',    nick:'REVILLA',  pos:'GK',  roles:{gk:2}},
+  {id:17, num:17, name:'CUNILL Pepe',       nick:'CUNILL',   pos:'DEF', roles:{pcd2:1,pcd3:2,pca_t:1}},
+  {id:18, num:18, name:'MENINI Joaquin',    nick:'MENINI',   pos:'MID', roles:{pca_s:4}},
+  {id:22, num:22, name:'CABRE Pol',         nick:'CABRE',    pos:'MID', roles:{}},
+  {id:23, num:23, name:'VIZCAINO Marc',     nick:'VIZCA',    pos:'DEF', roles:{pcd4:2,pca_s:1}},
+  {id:25, num:25, name:'PETCHAME Pau',      nick:'PETCHAME', pos:'FWD', roles:{}},
+  {id:26, num:26, name:'FONT Bruno',        nick:'FONT',     pos:'MID', roles:{pca_s:3}},
+  {id:27, num:27, name:'AMAT Pere',         nick:'PERE',     pos:'DEF', roles:{}},
+  {id:34, num:34, name:'ABAJO Ignacio',     nick:'ABAJO',    pos:'FWD', roles:{}},
+  {id:35, num:35, name:'ZALDUA Inaki',      nick:'INAKI',    pos:'DEF', roles:{}},
+  {id:37, num:37, name:'RAFI Andreas',      nick:'ANDREAS',  pos:'DEF', roles:{}},
+  {id:62, num:62, name:'COBOS Ignacio',     nick:'CHITO',    pos:'MID', roles:{pca_p:1}},
+  {id:63, num:63, name:'FORTUNO Guillermo', nick:'FORTUNO',  pos:'FWD', roles:{}},
+  {id:71, num:71, name:'BOZAL Oriol',       nick:'BOZAL',    pos:'DEF', roles:{}},
+  {id:80, num:80, name:'MIRALLES Enric',    nick:'TITI',     pos:'FWD', roles:{}},
+  {id:87, num:87, name:'ROMAN Pablo',       nick:'BOU',      pos:'FWD', roles:{}},
+  {id:90, num:90, name:'AGUIRRE Marco',     nick:'MARCO',    pos:'FWD', roles:{}}
+];
+
+var RDEFS = [
+  {id:'pcd1',lbl:'PCD1',grp:'D'},{id:'pcd2',lbl:'PCD2',grp:'D'},
+  {id:'pcd3',lbl:'PCD3',grp:'D'},{id:'pcd4',lbl:'PCD4',grp:'D'},
+  {id:'pca_t',lbl:'PCA-T',grp:'A'},{id:'pca_p',lbl:'PCA-P',grp:'A'},
+  {id:'pca_s',lbl:'PCA-S',grp:'A'}
+];
+
+var FIH = ['NED','BEL','AUS','GER','IND','ARG','GBR','ENG','PAK','MAS',
+           'ITA','NZL','RSA','FRA','IRL','KOR','USA','CHN','JPN','EGY',
+           'POL','CAN','TPE','UKR','WAL','SCO','SUI','CZE','AUT'];
+
+// ── STATE ──
+// Two separate objects: ROSTER (persists) and MATCH (resets per game)
+var ROSTER = {
+  squad:[], bench:[],        // convocatoria
+  roles:{},                  // {pid:{roleId:rank}}
+  pcVars:[], nextVid:1,      // variantes PC
+  rival:'ITA'
+};
+
+var MATCH = {
+  pairs:[], mirror:true, curQ:1,   // programacion
+  phase:'pre', running:false,
+  qElapsed:0, matchTime:0, breakCd:0,
+  score:{h:0,a:0}, qLog:[], log:[],
+  execIds:[], alerted:{},
+  events:[], pos:{}, posDragged:{}
+};
+
+var PTAB = 0;  // plantilla sub-tab: 0=jugadores 1=roles 2=variantes
+var CUR = 0;   // current screen
+var QD = 900;  // quarter duration seconds
+var BREAKS = {b12:120, b23:600, b34:120};
+var tiInt = null, stopInt = null;
+
+// ── UTILS ──
+function ft(s){
+  if(s<0)s=0;
+  return (s>=600?'':s>=60?'':'0')+Math.floor(s/60)+':'+(Math.floor(s)%60<10?'0':'')+Math.floor(s)%60;
+}
+function pad2(n){ return n<10?'0'+n:''+n; }
+function gP(id){ for(var i=0;i<POOL.length;i++) if(POOL[i].id===id) return POOL[i]; return null; }
+function isQ(){ return MATCH.phase==='q1'||MATCH.phase==='q2'||MATCH.phase==='q3'||MATCH.phase==='q4'; }
+function isBk(){ return MATCH.phase.charAt(0)==='b'; }
+function qNum(){
+  var m={q1:1,q2:2,q3:3,q4:4}; return m[MATCH.phase]||1;
+}
+function cdQ(){ return ft(Math.max(0,QD-MATCH.qElapsed)); }
+function inField(id){ return ROSTER.squad.indexOf(id)>=0; }
+function onBench(id){ return ROSTER.bench.indexOf(id)>=0; }
+
+// ── LINE POSITIONS ──
+function calcLinePos(){
+  var lineX={GK:5,DEF:23,MID:50,FWD:75};
+  var byPos={GK:[],DEF:[],MID:[],FWD:[]};
+  for(var i=0;i<ROSTER.squad.length;i++){
+    var p=gP(ROSTER.squad[i]);
+    if(p&&byPos[p.pos]) byPos[p.pos].push(p.id);
+  }
+  var poss=['GK','DEF','MID','FWD'];
+  for(var pi=0;pi<poss.length;pi++){
+    var pos=poss[pi], ids=byPos[pos], n=ids.length;
+    for(var ii=0;ii<n;ii++){
+      if(!MATCH.posDragged[ids[ii]]){
+        MATCH.pos[ids[ii]]={x:lineX[pos],y:10+(ii+1)*(80/(n+1))};
+      }
+    }
+  }
+}
+
+// ── INIT ──
+function initROSTER(){
+  var gks=[],flds=[];
+  for(var i=0;i<POOL.length;i++){
+    if(POOL[i].pos==='GK') gks.push(POOL[i].id);
+    else flds.push(POOL[i].id);
+  }
+  for(var i=0;i<10&&i<flds.length;i++) ROSTER.squad.push(flds[i]);
+  if(gks.length) ROSTER.squad.push(gks[0]);
+  for(var i=10;i<16&&i<flds.length;i++) ROSTER.bench.push(flds[i]);
+  if(gks.length>1) ROSTER.bench.push(gks[1]);
+  for(var i=0;i<POOL.length;i++){
+    var p=POOL[i];
+    ROSTER.roles[p.id]={};
+    var pr=p.roles||{}, ks=Object.keys(pr);
+    for(var k=0;k<ks.length;k++) ROSTER.roles[p.id][ks[k]]=pr[ks[k]];
+    MATCH.pos[p.id]={x:50,y:50};
+  }
+}
+
+// ── NAV ──
+function go(n){
+  CUR=n;
+  var ids=['s0','s1','s2','s3'];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]); if(!el) continue;
+    if(i===n){
+      if(i===2){ el.className='scr-flex scr-flex-on'; el.style.display='flex'; }
+      else { el.className='scr scr-on'; el.style.display='block'; }
+    } else {
+      el.className=(i===2)?'scr-flex':'scr';
+      el.style.display='none';
+    }
+  }
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].className=i===n?'tab tab-a':'tab';
+  var hm=document.getElementById('hdr-mid');
+  if(hm) hm.className=n===2?'hdr-mid hdr-mid-on':'hdr-mid';
+  if(n===0) rPlantilla();
+  if(n===1) rProg();
+  if(n===2) rPartido();
+  if(n===3) rInforme();
+  rHdr();
+}
+
+// ── TOASTS ──
+var _T=[];
+function toast(msg,type){
+  var id=Date.now()+Math.random(); type=type||'info';
+  _T.push({id:id,msg:msg,type:type});
+  rToasts();
+  setTimeout(function(){ _T=_T.filter(function(t){return t.id!==id;}); rToasts(); },type==='urgent'?18000:6000);
+}
+function rToasts(){
+  var el=document.getElementById('toasts'); if(!el) return;
+  var h='';
+  for(var i=0;i<_T.length;i++){
+    h+='<div class="toast t-'+_T[i].type+'"><span style="flex:1">'+_T[i].msg+'</span>'+
+       '<button class="t-x" data-tid="'+_T[i].id+'" onclick="dismissT(this)">x</button></div>';
+  }
+  el.innerHTML=h;
+}
+function dismissT(btn){ var id=parseFloat(btn.dataset.tid); _T=_T.filter(function(t){return t.id!==id;}); rToasts(); }
+
+// ── MODAL ──
+function openMod(html){ document.getElementById('mod-box').innerHTML=html; document.getElementById('mod-bg').style.display='flex'; }
+function closeMod(){ document.getElementById('mod-bg').style.display='none'; }
+
+// ══════════════════════════════════════════════════
+// PLANTILLA
+// ══════════════════════════════════════════════════
+function rPlantilla(){
+  var el=document.getElementById('pl-content'); if(!el) return;
+  var STABS=['JUGADORES','ROLES PC','VARIANTES PC'];
+  var h='<div class="sub-tabs">';
+  for(var i=0;i<STABS.length;i++){
+    h+='<button class="stab'+(PTAB===i?' stab-a':'')+'" data-ti="'+i+'" onclick="setPTAB(this)">'+STABS[i]+'</button>';
+  }
+  h+='</div>';
+  if(PTAB===0) h+=rJugadores();
+  if(PTAB===1) h+=rRoles();
+  if(PTAB===2) h+=rVariantes();
+  el.innerHTML=h;
+}
+function setPTAB(btn){ PTAB=parseInt(btn.dataset.ti); rPlantilla(); }
+
+function rJugadores(){
+  var nf=ROSTER.squad.length, nb=ROSTER.bench.length, nc=POOL.length-nf-nb;
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">';
+  h+='<div style="display:flex;gap:5px">';
+  h+='<button class="btn-n btn-sm" onclick="exportRoster()" style="font-size:8px;letter-spacing:1px">&#8593; EXPORTAR</button>';
+  h+='<button class="btn-n btn-sm" onclick="importRoster()" style="font-size:8px;letter-spacing:1px">&#8595; IMPORTAR</button>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:6px">';
+  h+='<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:18px;font-weight:900;color:var(--g);font-family:monospace">'+nf+'</div><div style="font-size:7px;color:var(--g);font-weight:700;letter-spacing:1px">CAMPO</div></div>';
+  h+='<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:18px;font-weight:900;color:#a16207;font-family:monospace">'+nb+'</div><div style="font-size:7px;color:#a16207;font-weight:700;letter-spacing:1px">BQUILLO</div></div>';
+  h+='<div style="background:#f1f5f9;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 10px;text-align:center"><div style="font-size:18px;font-weight:900;color:#64748b;font-family:monospace">'+nc+'</div><div style="font-size:7px;color:#64748b;font-weight:700;letter-spacing:1px">NO CONV</div></div>';
+  h+='</div>';
+  h+='<button class="btn-r btn-sm" onclick="openAddPlayer()">+ NUEVO</button></div></div>';
+  h+='<div style="font-size:9px;color:var(--t2);margin-bottom:10px">Toca para ciclar: Campo &#8594; Banquillo &#8594; No conv. &#8594; Campo</div>';
+  var posOrder=['GK','DEF','MID','FWD'];
+  var posColor={GK:'#7c3aed',DEF:'var(--b)',MID:'var(--g)',FWD:'var(--r)'};
+  for(var pi=0;pi<posOrder.length;pi++){
+    var pos=posOrder[pi];
+    var grp=[];
+    for(var i=0;i<POOL.length;i++) if(POOL[i].pos===pos) grp.push(POOL[i]);
+    grp.sort(function(a,b){return a.num-b.num;});
+    if(!grp.length) continue;
+    h+='<div style="font-size:7px;font-weight:800;letter-spacing:3px;color:'+posColor[pos]+';margin:10px 0 6px">'+pos+'</div>';
+    h+='<div class="pgrid">';
+    for(var i=0;i<grp.length;i++){
+      var p=grp[i], inf=inField(p.id), ben=onBench(p.id);
+      var cls='ptile'+(inf?' ptile-f':ben?' ptile-b':' ptile-o');
+      var stc=inf?'st-f':ben?'st-b':'st-o', stt=inf?'CAMPO':ben?'BANQUILLO':'NO CONV.';
+      var myR=ROSTER.roles[p.id]||{}, rks=Object.keys(myR).filter(function(k){return myR[k]>0;});
+      var rpips='';
+      for(var ri=0;ri<Math.min(rks.length,3);ri++){
+        rpips+='<span style="font-size:7px;color:var(--a);background:#fffbeb;border:1px solid #fde68a;padding:1px 5px;border-radius:3px;margin-right:2px">'+rks[ri].toUpperCase().replace('_','-')+'</span>';
+      }
+      h+='<div class="'+cls+'" data-pid="'+p.id+'" onclick="cyclePlayer(this)">';
+      h+='<div class="pt-top"><span class="pt-num">#'+p.num+'</span>';
+      h+='<button class="pt-edit" data-pid="'+p.id+'" onclick="event.stopPropagation();openEditP(this)">&#9998;</button></div>';
+      h+='<div class="pt-name">'+p.nick+'</div>';
+      h+='<span class="pt-pos pos-'+p.pos+'">'+p.pos+'</span>';
+      if(rpips) h+='<div style="margin-top:4px">'+rpips+'</div>';
+      h+='<span class="pt-st '+stc+'">'+stt+'</span></div>';
+    }
+    h+='</div>';
+  }
+  h+='<button class="btn-r" style="width:100%;margin-top:14px" onclick="go(1)">CONTINUAR A PROGRAMACION</button>';
+  return h;
+}
+
+function cyclePlayer(el){
+  var id=parseInt(el.dataset.pid); if(!id) return;
+  var inf=ROSTER.squad.indexOf(id), ben=ROSTER.bench.indexOf(id);
+  if(inf>=0){ ROSTER.squad.splice(inf,1); ROSTER.bench.push(id); }
+  else if(ben>=0){ ROSTER.bench.splice(ben,1); }
+  else { ROSTER.squad.push(id); }
+  save(); rPlantilla();
+}
+
+function openEditP(btn){
+  var id=parseInt(btn.dataset.pid), p=gP(id); if(!p) return;
+  var opts='';
+  var poss=['GK','DEF','MID','FWD'];
+  for(var i=0;i<poss.length;i++) opts+='<option value="'+poss[i]+'"'+(p.pos===poss[i]?' selected':'')+'>'+poss[i]+'</option>';
+  openMod('<div class="mod-ttl">EDITAR JUGADOR</div>'+
+    '<div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="ep-n" value="'+p.name+'"></div>'+
+    '<div class="frow"><label class="flbl">NICK</label><input class="finp" id="ep-k" value="'+p.nick+'"></div>'+
+    '<div class="frow"><label class="flbl">DORSAL</label><input class="finp" type="number" id="ep-d" value="'+p.num+'" style="max-width:80px;flex:none"></div>'+
+    '<div class="frow"><label class="flbl">POS</label><select class="finp" id="ep-p" style="max-width:110px;flex:none">'+opts+'</select></div>'+
+    '<div class="mod-acts"><button class="btn-r" style="flex:1" data-pid="'+id+'" onclick="saveEditP(this)">GUARDAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function saveEditP(btn){
+  var id=parseInt(btn.dataset.pid), p=gP(id); if(!p) return;
+  var n=document.getElementById('ep-n'), k=document.getElementById('ep-k'),
+      d=document.getElementById('ep-d'), pos=document.getElementById('ep-p');
+  if(n&&n.value.trim()) p.name=n.value.trim();
+  if(k&&k.value.trim()) p.nick=k.value.trim().toUpperCase();
+  if(d&&parseInt(d.value)) p.num=parseInt(d.value);
+  if(pos) p.pos=pos.value;
+  closeMod(); save(); rPlantilla();
+}
+function openAddPlayer(){
+  var opts='';
+  var poss=['GK','DEF','MID','FWD'];
+  for(var i=0;i<poss.length;i++) opts+='<option value="'+poss[i]+'">'+poss[i]+'</option>';
+  var sts='<option value="squad">Campo</option><option value="bench">Banquillo</option><option value="out">No conv.</option>';
+  openMod('<div class="mod-ttl">NUEVO JUGADOR</div>'+
+    '<div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="np-n" placeholder="Apellido Nombre"></div>'+
+    '<div class="frow"><label class="flbl">NICK</label><input class="finp" id="np-k" placeholder="NICK"></div>'+
+    '<div class="frow"><label class="flbl">DORSAL</label><input class="finp" type="number" id="np-d" placeholder="00" style="max-width:80px;flex:none"></div>'+
+    '<div class="frow"><label class="flbl">POS</label><select class="finp" id="np-p" style="max-width:110px;flex:none">'+opts+'</select></div>'+
+    '<div class="frow"><label class="flbl">ESTADO</label><select class="finp" id="np-s" style="max-width:140px;flex:none">'+sts+'</select></div>'+
+    '<div class="mod-acts"><button class="btn-r" style="flex:1" onclick="saveNewP()">GUARDAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function saveNewP(){
+  var n=document.getElementById('np-n'), k=document.getElementById('np-k'),
+      d=document.getElementById('np-d'), p=document.getElementById('np-p'),
+      s=document.getElementById('np-s');
+  var nv=n?n.value.trim():'', kv=k?k.value.trim().toUpperCase():'', dv=parseInt(d?d.value:'')||0;
+  if(!nv||!kv||!dv) return toast('Rellena nombre, nick y dorsal','warn');
+  for(var i=0;i<POOL.length;i++) if(POOL[i].num===dv) return toast('Dorsal #'+dv+' ya existe','warn');
+  var id=Date.now();
+  POOL.push({id:id,num:dv,name:nv,nick:kv,pos:p?p.value:'FWD',roles:{}});
+  ROSTER.roles[id]={};
+  MATCH.pos[id]={x:50,y:50};
+  var sv=s?s.value:'bench';
+  if(sv==='squad') ROSTER.squad.push(id);
+  else if(sv==='bench') ROSTER.bench.push(id);
+  closeMod(); save(); rPlantilla();
+  toast(kv+' anadido','ok');
+}
+
+function rRoles(){
+  var convIds=ROSTER.squad.concat(ROSTER.bench);
+  var conv=[];
+  for(var i=0;i<POOL.length;i++) if(convIds.indexOf(POOL[i].id)>=0) conv.push(POOL[i]);
+  conv.sort(function(a,b){return a.num-b.num;});
+  var pcdR=RDEFS.filter(function(r){return r.grp==='D';});
+  var pcaR=RDEFS.filter(function(r){return r.grp==='A';});
+  function buildT(rdefs, color){
+    var h='<div style="overflow-x:auto;margin-bottom:16px"><table class="roles-tbl"><thead><tr><th>JUGADOR</th>';
+    for(var i=0;i<rdefs.length;i++) h+='<th style="color:'+color+'">'+rdefs[i].lbl+'</th>';
+    h+='</tr></thead><tbody>';
+    for(var ci=0;ci<conv.length;ci++){
+      var p=conv[ci];
+      h+='<tr><td>#'+p.num+' '+p.nick+'</td>';
+      for(var ri=0;ri<rdefs.length;ri++){
+        var r=rdefs[ri], rank=(ROSTER.roles[p.id]||{})[r.id]||0;
+        h+='<td>'+(rank>0?'<span class="rk rk'+rank+'" data-pid="'+p.id+'" data-rid="'+r.id+'" onclick="cycleRank(this)">R'+rank+'</span>':
+          '<span class="rk rk0" data-pid="'+p.id+'" data-rid="'+r.id+'" onclick="cycleRank(this)">+</span>')+'</td>';
+      }
+      h+='</tr>';
+    }
+    h+='</tbody></table></div>';
+    return h;
+  }
+  var h='<div style="font-size:9px;color:var(--t2);margin-bottom:10px">Toca la celda para ciclar R1 &#8594; R2 &#8594; R3 &#8594; sin rol</div>';
+  h+='<span class="lbl" style="color:var(--a)">DEFENSA PC</span>'+buildT(pcdR,'var(--a)');
+  h+='<span class="lbl" style="color:var(--p)">ATAQUE PC</span>'+buildT(pcaR,'var(--p)');
+  return h;
+}
+function cycleRank(el){
+  var pid=parseInt(el.dataset.pid), rid=el.dataset.rid;
+  if(!ROSTER.roles[pid]) ROSTER.roles[pid]={};
+  var cur=(ROSTER.roles[pid][rid]||0);
+  ROSTER.roles[pid][rid]=cur>=3?0:cur+1;
+  save(); rPlantilla();
+}
+
+function rVariantes(){
+  var vars=ROSTER.pcVars.slice().sort(function(a,b){return a.rank-b.rank;});
+  var dirs=vars.filter(function(v){return v.cat==='direct';});
+  var vrs=vars.filter(function(v){return v.cat==='variant';});
+  var h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
+  h+='<span style="font-size:9px;color:var(--t2)">'+vars.length+' variantes</span>';
+  h+='<button class="btn-r btn-sm" onclick="openAddVar()">+ NUEVA</button></div>';
+  if(!vars.length) return h+'<div style="text-align:center;padding:30px;color:var(--t2);font-size:11px">Sin variantes. Toca + NUEVA.</div>';
+  h+='<div class="var-grid">';
+  h+='<div><span class="lbl" style="color:var(--b)">DIRECTOS</span>';
+  for(var i=0;i<dirs.length;i++){
+    var v=dirs[i], pls='';
+    for(var j=0;j<v.pids.length;j++){var p=gP(v.pids[j]);if(p)pls+='<span class="pip pip-d">'+p.nick+'</span>';}
+    h+='<div class="var-card vc-d" data-vid="'+v.id+'" onclick="openEditVar(this)">'+
+       '<div class="vc-rank" style="color:var(--b)">R'+v.rank+'</div>'+
+       '<div class="vc-name" style="color:var(--b)">'+v.name+'</div>'+
+       '<div class="vc-pips">'+pls+'</div></div>';
+  }
+  h+='</div><div><span class="lbl" style="color:var(--p)">VARIANTES</span>';
+  for(var i=0;i<vrs.length;i++){
+    var v=vrs[i], pls='';
+    for(var j=0;j<v.pids.length;j++){var p=gP(v.pids[j]);if(p)pls+='<span class="pip pip-v">'+p.nick+'</span>';}
+    h+='<div class="var-card vc-v" data-vid="'+v.id+'" onclick="openEditVar(this)">'+
+       '<div class="vc-rank" style="color:var(--p)">R'+v.rank+'</div>'+
+       '<div class="vc-name" style="color:var(--p)">'+v.name+'</div>'+
+       '<div class="vc-pips">'+pls+'</div></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function openAddVar(){
+  var opts=mkPlayerOpts(ROSTER.squad.concat(ROSTER.bench),[]);
+  openMod('<div class="mod-ttl">NUEVA VARIANTE PC</div>'+
+    '<div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="vn"></div>'+
+    '<div class="frow"><label class="flbl">TIPO</label><select class="finp" id="vc"><option value="direct">Directo</option><option value="variant">Variante</option></select></div>'+
+    '<div class="frow"><label class="flbl">RANKING</label><input class="finp" type="number" id="vr" value="1" min="1" max="9" style="max-width:70px;flex:none"></div>'+
+    '<div style="margin-bottom:10px"><span style="font-size:8px;color:var(--t2);font-weight:700;letter-spacing:2px;display:block;margin-bottom:6px">JUGADORES</span>'+
+    '<select class="finp" id="vp" multiple style="height:110px">'+opts+'</select></div>'+
+    '<div class="mod-acts"><button class="btn-r" style="flex:1" onclick="saveNewVar()">GUARDAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function saveNewVar(){
+  var vn=document.getElementById('vn'), vc=document.getElementById('vc'),
+      vr=document.getElementById('vr'), vp=document.getElementById('vp');
+  var name=vn?vn.value.trim():''; if(!name) return toast('Anade nombre','warn');
+  var pids=[]; if(vp){var os=vp.selectedOptions;for(var i=0;i<os.length;i++)pids.push(parseInt(os[i].value));}
+  if(!pids.length) return toast('Selecciona jugadores','warn');
+  ROSTER.pcVars.push({id:++ROSTER.nextVid,name:name,cat:vc?vc.value:'direct',rank:parseInt(vr?vr.value:'')||1,pids:pids});
+  closeMod(); save(); rPlantilla();
+}
+function openEditVar(el){
+  var id=parseInt(el.dataset.vid), v=null;
+  for(var i=0;i<ROSTER.pcVars.length;i++) if(ROSTER.pcVars[i].id===id){v=ROSTER.pcVars[i];break;}
+  if(!v) return;
+  var opts=mkPlayerOpts(ROSTER.squad.concat(ROSTER.bench),v.pids);
+  openMod('<div class="mod-ttl">EDITAR VARIANTE</div>'+
+    '<div class="frow"><label class="flbl">NOMBRE</label><input class="finp" id="vn" value="'+v.name+'"></div>'+
+    '<div class="frow"><label class="flbl">TIPO</label><select class="finp" id="vc"><option value="direct"'+(v.cat==='direct'?' selected':'')+'>Directo</option><option value="variant"'+(v.cat==='variant'?' selected':'')+'>Variante</option></select></div>'+
+    '<div class="frow"><label class="flbl">RANKING</label><input class="finp" type="number" id="vr" value="'+v.rank+'" min="1" max="9" style="max-width:70px;flex:none"></div>'+
+    '<div style="margin-bottom:10px"><select class="finp" id="vp" multiple style="height:110px">'+opts+'</select></div>'+
+    '<div class="mod-acts"><button class="btn-r" style="flex:1" data-vid="'+id+'" onclick="saveEditVar(this)">GUARDAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button>'+
+    '<button style="background:#fff0f0;border:1.5px solid var(--r);color:var(--r);padding:9px 13px;font-size:10px;font-weight:700;border-radius:8px;cursor:pointer" data-vid="'+id+'" onclick="delVar(this)">BORRAR</button></div>');
+}
+function saveEditVar(btn){
+  var id=parseInt(btn.dataset.vid), v=null;
+  for(var i=0;i<ROSTER.pcVars.length;i++) if(ROSTER.pcVars[i].id===id){v=ROSTER.pcVars[i];break;}
+  if(!v) return;
+  var vn=document.getElementById('vn'), vc=document.getElementById('vc'),
+      vr=document.getElementById('vr'), vp=document.getElementById('vp');
+  if(vn&&vn.value.trim()) v.name=vn.value.trim();
+  if(vc) v.cat=vc.value;
+  if(vr) v.rank=parseInt(vr.value)||1;
+  if(vp){v.pids=[];var os=vp.selectedOptions;for(var i=0;i<os.length;i++)v.pids.push(parseInt(os[i].value));}
+  closeMod(); save(); rPlantilla();
+}
+function delVar(btn){
+  var id=parseInt(btn.dataset.vid);
+  ROSTER.pcVars=ROSTER.pcVars.filter(function(v){return v.id!==id;});
+  closeMod(); save(); rPlantilla();
+}
+function mkPlayerOpts(ids, selIds){
+  var conv=[], opts='';
+  for(var i=0;i<POOL.length;i++) if(ids.indexOf(POOL[i].id)>=0) conv.push(POOL[i]);
+  conv.sort(function(a,b){return a.num-b.num;});
+  for(var i=0;i<conv.length;i++){
+    var sel=selIds.indexOf(conv[i].id)>=0?' selected':'';
+    opts+='<option value="'+conv[i].id+'"'+sel+'>#'+conv[i].num+' '+conv[i].nick+'</option>';
+  }
+  return opts;
+}
+
+// ══════════════════════════════════════════════════
+// PROGRAMACION
+// ══════════════════════════════════════════════════
+function rProg(){
+  rQSel();
+  rTimeline();
+}
+function rQSel(){
+  var el=document.getElementById('qsel'); if(!el) return;
+  var qs=MATCH.mirror?[1,2]:[1,2,3,4];
+  var h='';
+  for(var i=0;i<qs.length;i++){
+    var q=qs[i], a=MATCH.curQ===q;
+    var lbl='Q'+q+(MATCH.mirror&&q===1?' =Q3':MATCH.mirror&&q===2?' =Q4':'');
+    h+='<button class="qsbtn'+(a?' qsbtn-a':'')+'" data-q="'+q+'" onclick="setQ(this)">'+lbl+'</button>';
+  }
+  el.innerHTML=h;
+  var mb=document.getElementById('mir-btn');
+  if(mb){ mb.className='mir-btn'+(MATCH.mirror?'':' mir-off'); mb.textContent=MATCH.mirror?'Q1=Q3 Q2=Q4':'SIN ESPEJO'; }
+  var pi=document.getElementById('prog-info');
+  if(pi) pi.textContent=MATCH.pairs.length+' cambios';
+}
+function setQ(btn){ MATCH.curQ=parseInt(btn.dataset.q); rProg(); }
+function toggleMir(){ MATCH.mirror=!MATCH.mirror; if(MATCH.curQ>2&&MATCH.mirror)MATCH.curQ=1; rProg(); }
+
+function rTimeline(){
+  var el=document.getElementById('prog-body'); if(!el) return;
+  var q=MATCH.curQ;
+  var qP=MATCH.pairs.filter(function(p){return p.q===q;});
+  var byMin={};
+  for(var i=0;i<qP.length;i++){var p=qP[i];if(!byMin[p.cd])byMin[p.cd]=[];byMin[p.cd].push(p);}
+  var h='';
+  // INICIO DE CUARTO
+  if(q>1){
+    var sp=byMin[0]||[];
+    h+='<span class="lbl" style="color:var(--r)">INICIO Q'+q+' — AUTO AL FINALIZAR Q'+(q-1)+'</span>';
+    h+='<div class="tl-start">';
+    if(sp.length){
+      for(var i=0;i<sp.length;i++){
+        var p=sp[i],pO=gP(p.out),pI=gP(p.inp);
+        h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(200,16,46,.12)">';
+        h+='<span style="font-size:9px;font-weight:800;color:var(--r);min-width:58px">INICIO Q'+q+'</span>';
+        h+='<span class="chg-out">SALE #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+'</span>';
+        h+='<span class="chg-arr">&#8594;</span>';
+        h+='<span class="chg-in">ENTRA #'+(pI?pI.num:'?')+' '+(pI?pI.nick:'')+'</span>';
+        h+='<button class="chg-del" data-pid="'+p.id+'" onclick="delPair(this)">x</button></div>';
+      }
+    } else {
+      h+='<div style="font-size:10px;color:var(--t2)">Sin cambios de inicio</div>';
+    }
+    h+='<button onclick="openPairMod('+q+',0)" style="margin-top:8px;background:none;border:1.5px solid rgba(200,16,46,.4);color:var(--r);padding:5px 12px;font-size:9px;font-weight:800;border-radius:6px;cursor:pointer">+ ANADIR</button>';
+    h+='</div>';
+  }
+  // TIMELINE
+  h+='<span class="lbl">TIMELINE Q'+q+(MATCH.mirror&&q<=2?' (ESPEJO Q'+(q+2)+')':'')+'</span>';
+  h+='<div class="tl-bar">';
+  for(var cd=14;cd>=1;cd--){
+    var cnt=(byMin[cd]||[]).length, has=cnt>0;
+    h+='<div class="tl-min'+(has?' tl-has':'')+'" data-q="'+q+'" data-cd="'+cd+'" onclick="openPairModEl(this)">';
+    h+='<div class="tl-min-cd">'+pad2(cd)+':00</div>';
+    if(has) h+='<div class="tl-min-n">'+cnt+'x</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div style="display:flex;justify-content:space-between;font-size:7px;color:var(--t3);margin-bottom:10px"><span>INICIO Q'+q+'</span><span>FIN Q'+q+'</span></div>';
+  // LIST
+  var allQP=qP.filter(function(p){return p.cd>0;});
+  allQP.sort(function(a,b){return b.cd-a.cd;});
+  h+='<span class="lbl">CAMBIOS Q'+q+'</span>';
+  if(!allQP.length){
+    h+='<div style="color:var(--t2);font-size:11px;padding:8px 0">Sin cambios. Toca un minuto del timeline.</div>';
+  } else {
+    for(var i=0;i<allQP.length;i++){
+      var p=allQP[i],pO=gP(p.out),pI=gP(p.inp);
+      h+='<div class="chg-item">';
+      h+='<span class="chg-t">'+pad2(p.cd)+':00</span>';
+      h+='<span class="chg-out">SALE #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+'</span>';
+      h+='<span class="chg-arr">&#8594;</span>';
+      h+='<span class="chg-in">ENTRA #'+(pI?pI.num:'?')+' '+(pI?pI.nick:'')+'</span>';
+      h+='<button class="chg-del" data-pid="'+p.id+'" onclick="delPair(this)">x</button></div>';
+    }
+  }
+  h+='<button class="btn-r" style="width:100%;margin-top:16px" onclick="go(2)">IR AL PARTIDO</button>';
+  el.innerHTML=h;
+}
+
+function openPairModEl(el){ openPairMod(parseInt(el.dataset.q),parseInt(el.dataset.cd)); }
+function openPairMod(q,cd){
+  var field=fieldAt(q,cd);
+  var allConv=ROSTER.squad.concat(ROSTER.bench);
+  var onF=field.filter(function(id){return allConv.indexOf(id)>=0;});
+  var offF=allConv.filter(function(id){return onF.indexOf(id)<0;});
+  var tlbl=cd===0?'INICIO Q'+q:pad2(cd)+':00';
+  openMod('<div class="mod-ttl">CAMBIO '+tlbl+' Q'+q+'</div>'+
+    '<div style="font-size:9px;color:var(--t2);margin-bottom:12px">'+onF.length+' jugadores en campo</div>'+
+    '<div class="frow"><label class="flbl">SALE</label>'+
+    '<select class="finp" id="p-out" style="color:var(--r)"><option value="">quien sale...</option>'+
+    mkPlayerOpts(onF,[])+'</select></div>'+
+    '<div class="frow"><label class="flbl">ENTRA</label>'+
+    '<select class="finp" id="p-in" style="color:var(--g)"><option value="">quien entra...</option>'+
+    mkPlayerOpts(offF,[])+'</select></div>'+
+    '<div class="mod-acts">'+
+    '<button class="btn-r" style="flex:1" data-q="'+q+'" data-cd="'+cd+'" onclick="addPair(this)">ANADIR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>'+
+    '<div style="font-size:8px;color:var(--t2);margin-top:10px">Para varios cambios en el mismo minuto repite el proceso.</div>');
+}
+function addPair(btn){
+  var q=parseInt(btn.dataset.q), cd=parseInt(btn.dataset.cd);
+  var outEl=document.getElementById('p-out'), inEl=document.getElementById('p-in');
+  var outId=parseInt(outEl?outEl.value:''), inId=parseInt(inEl?inEl.value:'');
+  if(!outId||!inId) return toast('Selecciona quien sale y quien entra','warn');
+  MATCH.pairs.push({id:Date.now(),q:q,cd:cd,out:outId,inp:inId});
+  closeMod(); save(); rProg(); toast('Cambio anadido','ok');
+}
+function delPair(btn){
+  var id=parseInt(btn.dataset.pid);
+  MATCH.pairs=MATCH.pairs.filter(function(p){return p.id!==id;});
+  save(); rProg();
+}
+function fieldAt(q,cd){
+  var field=ROSTER.squad.slice();
+  var sorted=MATCH.pairs.slice().sort(function(a,b){return a.q!==b.q?a.q-b.q:b.cd-a.cd;});
+  for(var i=0;i<sorted.length;i++){
+    var p=sorted[i];
+    var before=(p.q<q)||(p.q===q&&p.cd===0)||(p.q===q&&cd!==0&&p.cd>cd);
+    if(before){var oi=field.indexOf(p.out);if(oi>=0){field.splice(oi,1);if(field.indexOf(p.inp)<0)field.push(p.inp);}}
+  }
+  return field;
+}
+
+// ══════════════════════════════════════════════════
+// PENDING HELPERS
+// ══════════════════════════════════════════════════
+function getQ(){ return isQ()?qNum():1; }
+function getE(){ return isQ()?MATCH.qElapsed:0; }
+
+function allPending(q,elapsed){
+  var result=[], srcQ=(MATCH.mirror&&(q===3||q===4))?q-2:q;
+  for(var i=0;i<MATCH.pairs.length;i++){
+    var p=MATCH.pairs[i]; if(p.q!==srcQ||p.cd===0) continue;
+    var mk=(q===3?'m3_':q===4?'m4_':'')+p.id;
+    var ek=(q===3||q===4)?mk:String(p.id);
+    if(MATCH.execIds.indexOf(ek)>=0) continue;
+    result.push({pairId:p.id,out:p.out,inp:p.inp,cd:p.cd,mk:(q===3||q===4)?mk:'',sl:p.cd*60-elapsed});
+  }
+  result.sort(function(a,b){return b.cd-a.cd;});
+  return result;
+}
+
+// ══════════════════════════════════════════════════
+// PARTIDO
+// ══════════════════════════════════════════════════
+function rPartido(){
+  var el=document.getElementById('match-body'); if(!el) return;
+  var h='';
+  // Controls (full width, above columns)
+  h+='<div class="ctrl-row" style="margin-top:8px">';
+  if(MATCH.phase==='pre') h+='<button class="ctrl-play" onclick="startQ()">INICIAR Q1</button>';
+  if(isQ()&&MATCH.running){ h+='<button class="ctrl-pause" onclick="pauseG()">PAUSA</button><button class="ctrl-end" onclick="endQ()">FIN Q'+qNum()+'</button>'; }
+  if(isQ()&&!MATCH.running){ h+='<button class="ctrl-play" onclick="resumeG()">REANUDAR</button><button class="ctrl-end" onclick="endQ()">FIN Q'+qNum()+'</button>'; }
+  if(MATCH.phase==='ended') h+='<button class="btn-r" style="flex:1" onclick="openNewMatch()">NUEVO PARTIDO</button>';
+  h+='</div>';
+
+  h+='<div class="mb-cols">';
+
+  // ── LEFT COLUMN: field + bench + events ──
+  h+='<div class="mb-left">';
+  calcLinePos();
+  h+='<span class="lbl">CAMPO</span>';
+  h+=buildField();
+  h+=buildBench();
+  h+='<span class="lbl">EVENTOS</span>';
+  h+='<div class="ev-row">';
+  h+='<button class="ev-btn ev-pcp" onclick="trigPC(1)"><span>PC+</span><span class="ev-sub">ESP</span></button>';
+  h+='<button class="ev-btn ev-pcn" onclick="trigPC(0)"><span>PC-</span><span class="ev-sub">'+ROSTER.rival+'</span></button>';
+  h+='<button class="ev-btn ev-gp" onclick="trigGol(1)"><span>GOL+</span><span class="ev-sub">40s</span></button>';
+  h+='<button class="ev-btn ev-gn" onclick="trigGol(0)"><span>GOL-</span><span class="ev-sub">40s</span></button>';
+  h+='</div>';
+  h+='</div>';
+
+  // ── RIGHT COLUMN: pending changes list ──
+  h+='<div class="mb-right">';
+  var pend=allPending(getQ(),getE());
+  if(pend.length){
+    h+='<div class="pend-box"><div class="pend-hdr"><span class="pend-lbl">CAMBIOS Q'+getQ()+'</span><span class="pend-cnt">'+pend.length+'</span></div>';
+    for(var i=0;i<pend.length;i++){
+      var p=pend[i], pO=gP(p.out), pI=gP(p.inp);
+      var sl=p.sl, isNow=sl<=0, isSoon=!isNow&&sl<=60;
+      var slCls=isNow?'pr-sl-now':isSoon?'pr-sl-soon':'pr-sl-ok';
+      var slTxt=isNow?'AHORA':isSoon?('en '+ft(sl)):'';
+      h+='<div class="pend-row'+(isNow||isSoon?' pend-now':'')+'">';
+      h+='<span class="pr-min">'+pad2(p.cd)+':00</span>';
+      h+='<span class="pr-sl '+slCls+'">'+slTxt+'</span>';
+      h+='<span class="pr-out">SALE #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+'</span>';
+      h+='<span class="pr-arr">&#8594;</span>';
+      h+='<span class="pr-in">ENTRA #'+(pI?pI.num:'?')+' '+(pI?pI.nick:'')+'</span>';
+      h+='<button class="pr-exec" data-pid="'+p.pairId+'" data-mk="'+(p.mk||'')+'" onclick="execBtn(this)">OK</button></div>';
+    }
+    h+='</div>';
+  } else {
+    h+='<div style="font-size:9px;color:var(--t2);padding:6px 0 10px">Sin cambios programados en Q'+getQ()+'</div>';
+  }
+  h+='</div>';
+
+  h+='</div>'; // .mb-cols
+  el.innerHTML=h;
+}
+
+function buildField(){
+  var svg='<svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 100 60" preserveAspectRatio="none">';
+  svg+='<rect width="100" height="60" fill="#1a3a1a"/>';
+  svg+='<rect x="1" y="1" width="98" height="58" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="0.6"/>';
+  svg+='<line x1="50" y1="1" x2="50" y2="59" stroke="rgba(255,255,255,.2)" stroke-width="0.4"/>';
+  svg+='<line x1="25" y1="1" x2="25" y2="59" stroke="rgba(255,255,255,.2)" stroke-width="0.4"/>';
+  svg+='<line x1="75" y1="1" x2="75" y2="59" stroke="rgba(255,255,255,.2)" stroke-width="0.4"/>';
+  svg+='<clipPath id="ca"><rect x="1" y="1" width="24" height="58"/></clipPath>';
+  svg+='<circle cx="1" cy="30" r="18" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="0.5" clip-path="url(#ca)"/>';
+  svg+='<clipPath id="cb"><rect x="75" y="1" width="24" height="58"/></clipPath>';
+  svg+='<circle cx="99" cy="30" r="18" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="0.5" clip-path="url(#cb)"/>';
+  svg+='<circle cx="50" cy="30" r="0.5" fill="rgba(255,255,255,.5)"/></svg>';
+  var pend=allPending(getQ(),getE());
+  var pendOut=[];
+  for(var i=0;i<pend.length;i++) pendOut.push(pend[i].out);
+  var posC={GK:'tok-gk',DEF:'tok-def',MID:'tok-mid',FWD:'tok-fwd'};
+  var toks='';
+  for(var i=0;i<ROSTER.squad.length;i++){
+    var id=ROSTER.squad[i], p=gP(id); if(!p) continue;
+    var ps=MATCH.pos[id]||{x:50,y:50};
+    var isPend=pendOut.indexOf(id)>=0;
+    var cls='tok '+(posC[p.pos]||'tok-mid')+(isPend?' tok-pend':'');
+    var pt=playedTime(id);
+    toks+='<div class="'+cls+'" data-pid="'+id+'" ontouchstart="tokTS(event)" onclick="tapTok(this)" '+
+          'style="left:calc('+ps.x+'% - 24px);top:calc('+ps.y+'% - 21px)">';
+    toks+='<div class="tok-num">#'+p.num+'</div>';
+    toks+='<div class="tok-nick">'+p.nick+'</div>';
+    toks+='<div class="tok-t">'+ft(pt)+'</div></div>';
+  }
+  return '<div class="field-wrap" id="fw">'+svg+toks+'</div>';
+}
+
+function buildBench(){
+  var bench=ROSTER.bench.filter(function(id){return ROSTER.squad.indexOf(id)<0;});
+  if(!bench.length) return '';
+  var pend=allPending(getQ(),getE());
+  var pendIn=[];
+  for(var i=0;i<pend.length;i++) pendIn.push(pend[i].inp);
+  bench.sort(function(a,b){
+    var pa=gP(a),pb=gP(b);
+    var po=['GK','DEF','MID','FWD'];
+    var ia=po.indexOf(pa?pa.pos:'FWD'), ib=po.indexOf(pb?pb.pos:'FWD');
+    return ia!==ib?ia-ib:(pa?pa.num:0)-(pb?pb.num:0);
+  });
+  var posC={GK:'#7c3aed',DEF:'var(--b)',MID:'var(--g)',FWD:'var(--r)'};
+  var h='<div class="bench-box"><div class="bench-hdr">BANQUILLO ('+bench.length+')</div>';
+  for(var i=0;i<bench.length;i++){
+    var id=bench[i], p=gP(id); if(!p) continue;
+    var isPend=pendIn.indexOf(id)>=0;
+    h+='<div class="bench-row" style="'+(isPend?'background:#f0fdf4;border-left:3px solid var(--g)':'')+'">';
+    h+='<span class="bench-num" style="color:'+(posC[p.pos]||'var(--r)')+'">'+p.num+'</span>';
+    h+='<span class="bench-name">'+p.nick+'</span>';
+    h+='<span class="pt-pos pos-'+p.pos+'">'+p.pos+'</span>';
+    if(isPend) h+='<span class="bench-in">ENTRA</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+// ── EXEC PAIR ──
+function execBtn(btn){ execPair(parseInt(btn.dataset.pid), btn.dataset.mk||''); }
+function execPair(pairId, mk){
+  var srcId=mk?parseInt(mk.replace('m3_','').replace('m4_','')):pairId;
+  var pair=null;
+  for(var i=0;i<MATCH.pairs.length;i++) if(MATCH.pairs[i].id===srcId){pair=MATCH.pairs[i];break;}
+  if(!pair) return;
+  var ek=mk||String(pairId);
+  if(MATCH.execIds.indexOf(ek)>=0) return;
+  MATCH.execIds.push(ek);
+  // Move out -> bench, in -> squad
+  var oi=ROSTER.squad.indexOf(pair.out);
+  if(oi>=0){
+    ROSTER.squad.splice(oi,1);
+    if(ROSTER.bench.indexOf(pair.out)<0) ROSTER.bench.push(pair.out);
+  }
+  var bi=ROSTER.bench.indexOf(pair.inp);
+  if(bi>=0) ROSTER.bench.splice(bi,1);
+  if(ROSTER.squad.indexOf(pair.inp)<0) ROSTER.squad.push(pair.inp);
+  // Transfer position
+  if(MATCH.pos[pair.out]) MATCH.pos[pair.inp]={x:MATCH.pos[pair.out].x,y:MATCH.pos[pair.out].y};
+  MATCH.log.push({type:'sub',sec:MATCH.matchTime,outId:pair.out,inId:pair.inp});
+  var pO=gP(pair.out), pI=gP(pair.inp);
+  toast('CAMBIO: #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+' > #'+(pI?pI.num:'?')+' '+(pI?pI.nick:''),'ok');
+  save(); if(CUR===2) rPartido();
+}
+
+// ── TAP TOKEN ──
+function tapTok(el){
+  var id=parseInt(el.dataset.pid);
+  var pend=allPending(getQ(),getE());
+  var p=null;
+  for(var i=0;i<pend.length;i++) if(pend[i].out===id){p=pend[i];break;}
+  if(p){
+    var pO=gP(p.out), pI=gP(p.inp), sl=p.sl;
+    var slTxt=sl<=0?'AHORA':ft(sl);
+    openMod('<div class="mod-ttl">CAMBIO PROGRAMADO</div>'+
+      '<div style="text-align:center;font-size:13px;font-weight:800;color:'+(sl<=0?'var(--r)':'var(--a)')+';margin-bottom:12px">'+slTxt+'</div>'+
+      '<div style="display:flex;gap:10px;margin-bottom:14px">'+
+      '<div style="flex:1;background:#fff0f0;border:1.5px solid rgba(200,16,46,.3);border-radius:9px;padding:10px;text-align:center">'+
+      '<div style="font-size:8px;color:var(--r);font-weight:700;margin-bottom:4px">SALE</div>'+
+      '<div style="font-size:18px;font-weight:900">#'+(pO?pO.num:'?')+'</div>'+
+      '<div style="font-size:11px;color:var(--t2)">'+(pO?pO.nick:'')+'</div></div>'+
+      '<div style="font-size:18px;color:var(--t3);align-self:center">&#8594;</div>'+
+      '<div style="flex:1;background:#f0fdf4;border:1.5px solid rgba(22,163,74,.3);border-radius:9px;padding:10px;text-align:center">'+
+      '<div style="font-size:8px;color:var(--g);font-weight:700;margin-bottom:4px">ENTRA</div>'+
+      '<div style="font-size:18px;font-weight:900">#'+(pI?pI.num:'?')+'</div>'+
+      '<div style="font-size:11px;color:var(--t2)">'+(pI?pI.nick:'')+'</div></div></div>'+
+      '<div class="mod-acts">'+
+      '<button class="btn-r" style="flex:1;padding:13px;font-size:13px" data-pid="'+p.pairId+'" data-mk="'+(p.mk||'')+'" onclick="execBtn(this);closeMod()">EJECUTAR</button>'+
+      '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+  } else {
+    openManualSub(id);
+  }
+}
+function openManualSub(outId){
+  var p=gP(outId);
+  var bench=ROSTER.bench.filter(function(id){return ROSTER.squad.indexOf(id)<0;});
+  openMod('<div class="mod-ttl">CAMBIO MANUAL</div>'+
+    '<div style="font-size:11px;color:var(--r);font-weight:700;margin-bottom:12px">SALE: #'+(p?p.num:'?')+' '+(p?p.nick:'')+'</div>'+
+    '<div class="frow"><label class="flbl">ENTRA</label>'+
+    '<select class="finp" id="ms-in" style="color:var(--g)"><option value="">quien entra...</option>'+
+    mkPlayerOpts(bench,[])+'</select></div>'+
+    '<div class="mod-acts">'+
+    '<button class="btn-r" style="flex:1" data-out="'+outId+'" onclick="confirmManual(this)">EJECUTAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function confirmManual(btn){
+  var outId=parseInt(btn.dataset.out);
+  var el=document.getElementById('ms-in'), inId=el?parseInt(el.value):0;
+  if(!inId) return toast('Selecciona quien entra','warn');
+  var oi=ROSTER.squad.indexOf(outId);
+  if(oi>=0){
+    ROSTER.squad.splice(oi,1);
+    if(ROSTER.bench.indexOf(outId)<0) ROSTER.bench.push(outId);
+  }
+  var bi=ROSTER.bench.indexOf(inId); if(bi>=0) ROSTER.bench.splice(bi,1);
+  if(ROSTER.squad.indexOf(inId)<0) ROSTER.squad.push(inId);
+  if(MATCH.pos[outId]) MATCH.pos[inId]={x:MATCH.pos[outId].x,y:MATCH.pos[outId].y};
+  MATCH.log.push({type:'sub',sec:MATCH.matchTime,outId:outId,inId:inId,sit:'manual'});
+  var pO=gP(outId), pI=gP(inId);
+  toast('MANUAL: #'+(pO?pO.num:'?')+' > #'+(pI?pI.num:'?'),'ok');
+  closeMod(); save(); if(CUR===2) rPartido();
+}
+
+// ── TIMER ──
+function startTmr(){
+  clearInterval(tiInt); if(!MATCH.running) return;
+  tiInt=setInterval(function(){
+    if(isBk()){
+      MATCH.breakCd--;
+      if(MATCH.breakCd<=0){MATCH.running=false;MATCH.breakCd=0;clearInterval(tiInt);}
+    } else if(isQ()){
+      MATCH.qElapsed++;MATCH.matchTime++;
+      if(MATCH.qElapsed>=QD){autoEndQ();return;}
+      checkAlerts();
+    }
+    rHdr();
+    if(CUR===2) rPartido();
+  },1000);
+}
+function stopTmr(){ clearInterval(tiInt); }
+
+function startQ(){
+  if(MATCH.phase==='pre'){
+    MATCH.log=[{type:'init',ids:ROSTER.squad.slice(),sec:0}];
+    MATCH.execIds=[];MATCH.alerted={};MATCH.events=[];
+    MATCH.score={h:0,a:0};MATCH.matchTime=0;MATCH.qElapsed=0;MATCH.qLog=[];
+    MATCH.posDragged={};
+    var sh=document.getElementById('sc-h');if(sh)sh.textContent='0';
+    var sa=document.getElementById('sc-a');if(sa)sa.textContent='0';
+  }
+  hideBrk();
+  MATCH.phase='q1';MATCH.qElapsed=0;MATCH.running=true;
+  startTmr();rHdr();if(CUR===2)rPartido();
+}
+function startNextQ(){
+  var nq={b12:'q2',b23:'q3',b34:'q4'}[MATCH.phase]; if(!nq) return;
+  hideBrk();
+  MATCH.phase=nq;MATCH.qElapsed=0;MATCH.running=true;
+  startTmr();rHdr();if(CUR===2)rPartido();
+}
+function pauseG(){MATCH.running=false;stopTmr();rHdr();if(CUR===2)rPartido();}
+function resumeG(){MATCH.running=true;startTmr();rHdr();if(CUR===2)rPartido();}
+
+function endQ(){
+  stopTmr();MATCH.running=false;
+  MATCH.qLog.push({num:qNum(),start:MATCH.matchTime-MATCH.qElapsed,end:MATCH.matchTime});
+  var nxt={q1:'b12',q2:'b23',q3:'b34',q4:'ended'}[MATCH.phase];
+  if(nxt==='ended'){MATCH.phase='ended';rHdr();if(CUR===2)rPartido();return;}
+  var nqn={b12:2,b23:3,b34:4}[nxt];
+  execInitPairs(nqn);
+  MATCH.breakCd=BREAKS[nxt];MATCH.phase=nxt;MATCH.qElapsed=0;MATCH.running=true;
+  showBrk(nxt,nqn);
+  startTmr();rHdr();if(CUR===2)rPartido();
+}
+function autoEndQ(){
+  stopTmr();MATCH.running=false;
+  MATCH.qLog.push({num:qNum(),start:MATCH.matchTime-QD,end:MATCH.matchTime});
+  var nxt={q1:'b12',q2:'b23',q3:'b34',q4:'ended'}[MATCH.phase];
+  if(nxt==='ended'){MATCH.phase='ended';rHdr();if(CUR===3)rInforme();else go(3);return;}
+  var nqn={b12:2,b23:3,b34:4}[nxt];
+  execInitPairs(nqn);
+  MATCH.breakCd=BREAKS[nxt];MATCH.phase=nxt;MATCH.qElapsed=0;MATCH.running=true;
+  showBrk(nxt,nqn);
+  startTmr();rHdr();if(CUR===2)rPartido();
+}
+function execInitPairs(nqn){
+  var initP=MATCH.pairs.filter(function(p){return p.q===nqn&&p.cd===0;}), cnt=0;
+  for(var i=0;i<initP.length;i++){
+    var p=initP[i];
+    var oi=ROSTER.squad.indexOf(p.out);
+    if(oi>=0){
+      ROSTER.squad.splice(oi,1);
+      if(ROSTER.bench.indexOf(p.out)<0) ROSTER.bench.push(p.out);
+    }
+    var bi=ROSTER.bench.indexOf(p.inp); if(bi>=0) ROSTER.bench.splice(bi,1);
+    if(ROSTER.squad.indexOf(p.inp)<0) ROSTER.squad.push(p.inp);
+    if(MATCH.pos[p.out]) MATCH.pos[p.inp]={x:MATCH.pos[p.out].x,y:MATCH.pos[p.out].y};
+    MATCH.log.push({type:'sub',sec:MATCH.matchTime,outId:p.out,inId:p.inp,sit:'inicio_q'+nqn});
+    MATCH.execIds.push(String(p.id));
+    cnt++;
+  }
+  if(cnt>0) toast(cnt+' cambios inicio Q'+nqn+' ejecutados','ok');
+}
+function showBrk(nxt,nqn){
+  var bb=document.getElementById('brk'); if(!bb) return;
+  bb.style.display='flex';
+  var titles={b12:'DESCANSO 2 MIN',b23:'MEDIO TIEMPO',b34:'DESCANSO 2 MIN'};
+  var bt=document.getElementById('brk-title');if(bt)bt.textContent=titles[nxt]||'DESCANSO';
+  var bs=document.getElementById('brk-sub');if(bs)bs.textContent='Q'+nqn+' listo';
+  var bbn=document.getElementById('brk-btn');if(bbn)bbn.textContent='INICIAR Q'+nqn;
+}
+function hideBrk(){ var bb=document.getElementById('brk');if(bb)bb.style.display='none'; }
+
+function checkAlerts(){
+  if(!isQ()) return;
+  var q=qNum(), e=MATCH.qElapsed;
+  var pend=allPending(q,e);
+  for(var i=0;i<pend.length;i++){
+    var p=pend[i], sl=p.sl;
+    var pO=gP(p.out), pI=gP(p.inp);
+    var k50='50_'+p.out+'_q'+q, k0='0_'+p.out+'_q'+q;
+    if(!MATCH.alerted[k50]&&sl>0&&sl<=60){
+      MATCH.alerted[k50]=1;
+      toast('CAMBIO en '+Math.round(sl)+'s: #'+(pO?pO.num:'?')+' > #'+(pI?pI.num:'?'),'warn');
+    }
+    if(!MATCH.alerted[k0]&&sl<=0){
+      MATCH.alerted[k0]=1;
+      toast('CAMBIO AHORA: #'+(pO?pO.num:'?')+' > #'+(pI?pI.num:'?'),'urgent');
+    }
+  }
+}
+
+// ── PLAYED TIME ──
+function playedTime(id){
+  var t=0,inF=false,last=0;
+  var init=null;
+  for(var i=0;i<MATCH.log.length;i++) if(MATCH.log[i].type==='init'){init=MATCH.log[i];break;}
+  if(init&&init.ids&&init.ids.indexOf(id)>=0){inF=true;last=0;}
+  for(var i=0;i<MATCH.log.length;i++){
+    var e=MATCH.log[i]; if(e.type!=='sub') continue;
+    if(e.outId===id&&inF){t+=e.sec-last;inF=false;last=e.sec;}
+    if(e.inId===id&&!inF){inF=true;last=e.sec;}
+  }
+  if(inF) t+=MATCH.matchTime-last;
+  return t;
+}
+
+// ── PC ──
+function trigPC(side){
+  if(MATCH.running){MATCH.running=false;stopTmr();}
+  MATCH.events.push({id:Date.now(),lbl:'PC_'+(side===1?'ESP':ROSTER.rival),start:Math.max(0,MATCH.matchTime-2),end:MATCH.matchTime+5});
+  if(side===1) openPCPanel();
+  rHdr();if(CUR===2)rPartido();
+}
+function openPCPanel(){
+  var onF=ROSTER.squad.slice();
+  var avail=ROSTER.pcVars.filter(function(v){return v.pids.every(function(pid){return onF.indexOf(pid)>=0;});});
+  var notAvail=ROSTER.pcVars.filter(function(v){return !v.pids.every(function(pid){return onF.indexOf(pid)>=0;});});
+  var dirs=avail.filter(function(v){return v.cat==='direct';}).sort(function(a,b){return a.rank-b.rank;});
+  var vrs=avail.filter(function(v){return v.cat==='variant';}).sort(function(a,b){return a.rank-b.rank;});
+  function grpH(items,col,pipCls,itemCls){
+    if(!items.length) return '<div style="color:var(--t2);font-size:10px;padding:6px">Ninguna disponible</div>';
+    var h='';
+    for(var i=0;i<items.length;i++){
+      var v=items[i], pls='';
+      for(var j=0;j<v.pids.length;j++){var p=gP(v.pids[j]);if(p)pls+='<span class="pip '+pipCls+'">'+p.nick+'</span>';}
+      h+='<div class="pc-item '+itemCls+'" data-vid="'+v.id+'" onclick="selVariant(this)">'+
+         '<div class="pc-rank" style="color:'+col+'">R'+v.rank+'</div>'+
+         '<div class="pc-name" style="color:'+col+'">'+v.name+'</div>'+
+         '<div class="vc-pips">'+pls+'</div></div>';
+    }
+    return h;
+  }
+  var naH='';
+  if(notAvail.length){
+    naH='<div style="margin-top:12px;border-top:1.5px solid var(--bd);padding-top:12px">'+
+        '<div style="font-size:8px;color:var(--t2);font-weight:700;letter-spacing:2px;margin-bottom:6px">NO DISPONIBLES</div>';
+    for(var i=0;i<notAvail.length;i++){
+      var v=notAvail[i];
+      naH+='<div class="pc-item '+(v.cat==='direct'?'pc-d':'pc-v')+' pc-na"><div class="pc-rank">R'+v.rank+'</div><div class="pc-name">'+v.name+'</div></div>';
+    }
+    naH+='</div>';
+  }
+  document.getElementById('pc-box').innerHTML=
+    '<div class="pc-hdr"><span class="pc-ttl">PC+ DISPONIBLES ('+avail.length+'/'+ROSTER.pcVars.length+')</span>'+
+    '<button class="pc-cls" onclick="closePCP()">x</button></div>'+
+    '<div class="pc-cols">'+
+    '<div><span class="pc-col-lbl" style="color:var(--b)">DIRECTOS</span>'+grpH(dirs,'var(--b)','pip-d','pc-d')+'</div>'+
+    '<div><span class="pc-col-lbl" style="color:var(--p)">VARIANTES</span>'+grpH(vrs,'var(--p)','pip-v','pc-v')+'</div>'+
+    '</div>'+naH+
+    '<button onclick="closePCP()" style="width:100%;margin-top:14px;background:none;border:1.5px solid var(--bd);color:var(--t2);padding:9px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer">CERRAR</button>';
+  document.getElementById('pc-panel').style.display='flex';
+}
+function closePCP(){ document.getElementById('pc-panel').style.display='none'; }
+function selVariant(el){
+  var id=parseInt(el.dataset.vid), v=null;
+  for(var i=0;i<ROSTER.pcVars.length;i++) if(ROSTER.pcVars[i].id===id){v=ROSTER.pcVars[i];break;}
+  if(!v) return; closePCP();
+  toast('PC: '+v.name+' - COMUNICAR AL CAMPO','info');
+}
+
+// ── GOL ──
+function trigGol(side){
+  MATCH.events.push({id:Date.now(),lbl:'GOL_'+(side===1?'ESP':ROSTER.rival),start:Math.max(0,MATCH.matchTime-5),end:MATCH.matchTime+5});
+  if(side===1){MATCH.score.h++;var sh=document.getElementById('sc-h');if(sh)sh.textContent=MATCH.score.h;}
+  else{MATCH.score.a++;var sa=document.getElementById('sc-a');if(sa)sa.textContent=MATCH.score.a;}
+  if(MATCH.running){MATCH.running=false;stopTmr();}
+  clearInterval(stopInt);
+  var cd=40;
+  stopInt=setInterval(function(){cd--;if(cd<=0){clearInterval(stopInt);MATCH.running=true;startTmr();}rHdr();},1000);
+  toast('GOL '+(side===1?'ESP':ROSTER.rival)+' - reanuda en 40s','info');
+  rHdr();if(CUR===2)rPartido();
+}
+function adjSc(side,d){
+  if(side===0){MATCH.score.h=Math.max(0,MATCH.score.h+d);var el=document.getElementById('sc-h');if(el)el.textContent=MATCH.score.h;}
+  else{MATCH.score.a=Math.max(0,MATCH.score.a+d);var el=document.getElementById('sc-a');if(el)el.textContent=MATCH.score.a;}
+}
+
+// ── DRAG ──
+var _D={id:null,el:null,fw:null,moved:false};
+function tokTS(e){
+  if(e.cancelable) e.preventDefault();
+  var el=e.currentTarget;
+  _D.id=parseInt(el.dataset.pid);
+  _D.el=el;_D.moved=false;
+  _D.fw=document.getElementById('fw');
+  el.style.zIndex='20';
+}
+document.addEventListener('touchmove',function(e){
+  if(_D.id===null||!_D.fw) return;
+  if(e.cancelable) e.preventDefault();
+  _D.moved=true;
+  var t=e.touches[0], fr=_D.fw.getBoundingClientRect();
+  var x=t.clientX-fr.left-_D.el.offsetWidth/2;
+  var y=t.clientY-fr.top-_D.el.offsetHeight/2;
+  var px=Math.max(0,Math.min(fr.width-_D.el.offsetWidth,x));
+  var py=Math.max(0,Math.min(fr.height-_D.el.offsetHeight,y));
+  _D.el.style.left=px+'px';
+  _D.el.style.top=py+'px';
+  MATCH.pos[_D.id]={x:Math.round((px+_D.el.offsetWidth/2)/fr.width*100),y:Math.round((py+_D.el.offsetHeight/2)/fr.height*100)};
+  MATCH.posDragged[_D.id]=1;
+},{passive:false});
+document.addEventListener('touchend',function(){
+  if(_D.id===null) return;
+  if(!_D.moved) tapTok(_D.el);
+  _D.el.style.zIndex='';
+  _D.id=null;_D.el=null;_D.fw=null;
+  save();
+});
+
+// ── HDR ──
+function rHdr(){
+  var td=document.getElementById('tmr');if(!td)return;
+  td.textContent=isBk()?ft(MATCH.breakCd):cdQ();
+  td.style.color=isBk()?'#60a5fa':(!MATCH.running&&MATCH.phase!=='pre')?'#fbbf24':'#4ade80';
+  var phases={pre:'PRE-PARTIDO',ended:'FINALIZADO',b12:'DESCANSO',b23:'MEDIO TIEMPO',b34:'DESCANSO'};
+  var ph=document.getElementById('tmr-phase');
+  if(ph) ph.textContent=phases[MATCH.phase]||(isQ()?'Q'+qNum()+(MATCH.running?' EN JUEGO':' PARADO'):'');
+  var qp=document.getElementById('qpips');
+  if(qp){
+    var h='';
+    for(var q=1;q<=4;q++){
+      var done=false;
+      for(var i=0;i<MATCH.qLog.length;i++) if(MATCH.qLog[i].num===q){done=true;break;}
+      h+='<div class="qpip'+(done?' qpip-d':MATCH.phase===('q'+q)?' qpip-a':'')+'"></div>';
+    }
+    qp.innerHTML=h;
+  }
+  var bt=document.getElementById('brk-tmr');if(bt)bt.textContent=ft(MATCH.breakCd);
+  var rb=document.getElementById('riv-btn');if(rb)rb.textContent='ESP vs '+ROSTER.rival;
+  var rl=document.getElementById('riv-lbl');if(rl)rl.textContent=ROSTER.rival;
+}
+
+// ── RIVAL ──
+function openRivMod(){
+  var opts='';
+  for(var i=0;i<FIH.length;i++) opts+='<option value="'+FIH[i]+'"'+(ROSTER.rival===FIH[i]?' selected':'')+'>'+FIH[i]+'</option>';
+  opts+='<option value="OTHER">Otro...</option>';
+  openMod('<div class="mod-ttl">RIVAL</div>'+
+    '<select class="finp" id="riv-sel" style="margin-bottom:10px" onchange="rivChg(this)">'+opts+'</select>'+
+    '<div id="riv-cw" style="display:none;margin-bottom:10px"><input class="finp" id="riv-cust" placeholder="Codigo FIH"></div>'+
+    '<div class="mod-acts"><button class="btn-r" style="flex:1" onclick="setRiv()">OK</button><button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function rivChg(sel){ var cw=document.getElementById('riv-cw');if(cw)cw.style.display=sel.value==='OTHER'?'block':'none'; }
+function setRiv(){
+  var sel=document.getElementById('riv-sel');if(!sel)return;
+  if(sel.value==='OTHER'){var c=document.getElementById('riv-cust');if(c&&c.value.trim())ROSTER.rival=c.value.trim().toUpperCase();}
+  else ROSTER.rival=sel.value;
+  closeMod();save();rHdr();if(CUR===2)rPartido();
+}
+
+// ── NEW MATCH ──
+function openNewMatch(){
+  openMod('<div class="mod-ttl">NUEVO PARTIDO</div>'+
+    '<div style="font-size:11px;color:var(--t2);margin-bottom:14px">'+
+    '<b>Se conserva:</b> plantilla, roles y variantes PC.<br>'+
+    '<b>Se borra:</b> programacion, marcador y log de partido.</div>'+
+    '<div class="mod-acts">'+
+    '<button class="btn-r" style="flex:1" onclick="doNewMatch()">CONFIRMAR</button>'+
+    '<button class="btn-n" onclick="closeMod()">CANCELAR</button></div>');
+}
+function doNewMatch(){
+  closeMod();
+  MATCH.pairs=[];MATCH.mirror=true;MATCH.curQ=1;
+  MATCH.phase='pre';MATCH.running=false;MATCH.qElapsed=0;MATCH.matchTime=0;MATCH.breakCd=0;
+  MATCH.score={h:0,a:0};MATCH.qLog=[];MATCH.log=[];MATCH.execIds=[];MATCH.alerted={};
+  MATCH.events=[];MATCH.pos={};MATCH.posDragged={};
+  stopTmr();clearInterval(stopInt);
+  hideBrk();
+  // Re-init positions
+  for(var i=0;i<POOL.length;i++) MATCH.pos[POOL[i].id]={x:50,y:50};
+  save();rHdr();go(0);
+  toast('Nuevo partido. Plantilla conservada, programacion borrada.','ok');
+}
+
+// ══════════════════════════════════════════════════
+// INFORME
+// ══════════════════════════════════════════════════
+function rInforme(){
+  var el=document.getElementById('inf-content');if(!el)return;
+  var h='<div style="font-size:12px;font-weight:800;margin-bottom:14px">ESP '+MATCH.score.h+' - '+MATCH.score.a+' '+ROSTER.rival+' &middot; '+ft(MATCH.matchTime)+'</div>';
+  var subs=MATCH.log.filter(function(e){return e.type==='sub';});
+  h+='<span class="lbl">CAMBIOS</span>';
+  if(!subs.length) h+='<div style="color:var(--t2);font-size:10px;margin-bottom:12px">Sin cambios registrados</div>';
+  for(var i=0;i<subs.length;i++){
+    var ev=subs[i], pO=gP(ev.outId), pI=gP(ev.inId);
+    var qn=Math.floor(ev.sec/QD)+1, cd=ft(Math.max(0,QD-(ev.sec%QD)));
+    h+='<div class="inf-row">'+
+       '<span style="font-size:10px;font-weight:800;color:var(--a);min-width:48px;font-family:monospace">'+cd+' Q'+qn+'</span>'+
+       '<span style="font-size:11px;color:var(--r);font-weight:700">SALE #'+(pO?pO.num:'?')+' '+(pO?pO.nick:'')+'</span>'+
+       '<span style="color:var(--t3);margin:0 4px">&#8594;</span>'+
+       '<span style="font-size:11px;color:var(--g);font-weight:700">ENTRA #'+(pI?pI.num:'?')+' '+(pI?pI.nick:'')+'</span>'+
+       '</div>';
+  }
+  var conv=ROSTER.squad.concat(ROSTER.bench);
+  h+='<span class="lbl" style="margin-top:14px">TIEMPOS DE JUEGO</span>';
+  for(var i=0;i<conv.length;i++){
+    var p=gP(conv[i]);if(!p)continue;
+    var pt=playedTime(conv[i]), pct=MATCH.matchTime>0?Math.round(pt/MATCH.matchTime*100):0;
+    h+='<div style="background:var(--card);border:1.5px solid var(--bd);border-radius:9px;padding:9px 12px;margin-bottom:5px">'+
+       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">'+
+       '<span style="font-size:11px;font-weight:700">#'+p.num+' '+p.nick+'</span>'+
+       '<span style="font-size:10px;color:var(--g);font-weight:700;font-family:monospace">'+ft(pt)+'</span></div>'+
+       '<div class="inf-bar-wrap"><div class="inf-bar-fill" style="width:'+pct+'%"></div></div></div>';
+  }
+  h+='<div style="display:flex;gap:8px;margin-top:16px">'+
+     '<button class="btn-r" style="flex:1" onclick="exportXML()">EXPORTAR XML</button>'+
+     '<button class="btn-n" style="flex:1" onclick="openNewMatch()">NUEVO PARTIDO</button></div>';
+  el.innerHTML=h;
+}
+
+function exportXML(){
+  var iid=1, lines=[
+    '<?xml version="1.0" encoding="utf-8"?>',
+    '<file>',
+    '  <ALL_INSTANCES>'
+  ];
+  var conv=ROSTER.squad.concat(ROSTER.bench);
+  for(var ci=0;ci<conv.length;ci++){
+    var id=conv[ci], segs=[], inF=false, seg=null, init=null;
+    for(var i=0;i<MATCH.log.length;i++) if(MATCH.log[i].type==='init'){init=MATCH.log[i];break;}
+    if(init&&init.ids&&init.ids.indexOf(id)>=0){inF=true;seg=0;}
+    for(var i=0;i<MATCH.log.length;i++){
+      var e=MATCH.log[i];if(e.type!=='sub')continue;
+      if(e.outId===id&&inF){segs.push({s:seg,e:e.sec});inF=false;seg=null;}
+      if(e.inId===id&&!inF){inF=true;seg=e.sec;}
+    }
+    if(inF&&seg!==null)segs.push({s:seg,e:MATCH.matchTime});
+    var p=gP(id);
+    for(var si=0;si<segs.length;si++){
+      lines.push('    <instance><ID>'+iid+'</ID><start>'+segs[si].s+'</start><end>'+segs[si].e+'</end><code>'+(p?p.nick:id)+'.Player</code></instance>');
+      iid++;
+    }
+  }
+  for(var i=0;i<MATCH.events.length;i++){
+    var ev=MATCH.events[i];
+    lines.push('    <instance><ID>'+iid+'</ID><start>'+ev.start+'</start><end>'+ev.end+'</end><code>'+ev.lbl+'</code></instance>');
+    iid++;
+  }
+  for(var i=0;i<MATCH.qLog.length;i++){
+    var q=MATCH.qLog[i];
+    lines.push('    <instance><ID>'+iid+'</ID><start>'+q.start+'</start><end>'+q.end+'</end><code>Quarters_Time</code></instance>');
+    iid++;
+  }
+  lines.push('  </ALL_INSTANCES>','</file>','');
+  var blob=new Blob([lines.join('\n')],{type:'application/xml'});
+
+  var url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='Logs-'+new Date().toISOString().slice(0,10)+'_ESP-'+ROSTER.rival+'.xml';
+  a.click();URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════════
+// ROSTER EXPORT / IMPORT
+// ══════════════════════════════════════════════════
+function exportRoster(){
+  var data={
+    pool:POOL,
+    squad:ROSTER.squad,
+    bench:ROSTER.bench,
+    roles:ROSTER.roles,
+    pcVars:ROSTER.pcVars,
+    nextVid:ROSTER.nextVid,
+    rival:ROSTER.rival,
+    exported:new Date().toISOString().slice(0,10),
+    version:'rs27'
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url;
+  a.download='RedSticks-Plantilla-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Plantilla exportada','ok');
+}
+function importRoster(){
+  var inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='.json';
+  inp.onchange=function(e){
+    var file=e.target.files[0]; if(!file) return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var d=JSON.parse(ev.target.result);
+        if(d.pool&&d.pool.length){
+          POOL.length=0;
+          for(var i=0;i<d.pool.length;i++) POOL.push(d.pool[i]);
+        }
+        if(d.squad) ROSTER.squad=d.squad;
+        if(d.bench) ROSTER.bench=d.bench;
+        if(d.roles) ROSTER.roles=d.roles;
+        if(d.pcVars) ROSTER.pcVars=d.pcVars;
+        if(d.nextVid) ROSTER.nextVid=d.nextVid;
+        if(d.rival) ROSTER.rival=d.rival;
+        save();
+        rPlantilla();
+        toast('Plantilla importada correctamente','ok');
+      }catch(err){
+        toast('Error al importar: archivo invalido','urgent');
+      }
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+// ══════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════
+var LS='redsticks-esp-absoluta', _st=null;
+function save(){ clearTimeout(_st); _st=setTimeout(doSave,1500); }
+setInterval(doSave,15000);
+function doSave(){
+  try{
+    localStorage.setItem(LS,JSON.stringify({
+      roster:{
+        squad:ROSTER.squad, bench:ROSTER.bench,
+        roles:ROSTER.roles, pcVars:ROSTER.pcVars,
+        nextVid:ROSTER.nextVid, rival:ROSTER.rival
+      },
+      match:{
+        pairs:MATCH.pairs, mirror:MATCH.mirror, curQ:MATCH.curQ,
+        phase:MATCH.phase, qElapsed:MATCH.qElapsed,
+        matchTime:MATCH.matchTime, breakCd:MATCH.breakCd,
+        score:MATCH.score, qLog:MATCH.qLog, log:MATCH.log,
+        execIds:MATCH.execIds, alerted:MATCH.alerted,
+        events:MATCH.events, pos:MATCH.pos, posDragged:MATCH.posDragged
+      },
+      pool:POOL
+    }));
+  }catch(e){console.warn('save',e);}
+}
+function doLoad(){
+  try{
+    var raw=localStorage.getItem(LS); if(!raw) return false;
+    var d=JSON.parse(raw);
+    if(d.pool&&d.pool.length){
+      POOL.length=0;
+      for(var i=0;i<d.pool.length;i++) POOL.push(d.pool[i]);
+    }
+    if(d.roster){
+      var r=d.roster;
+      if(r.squad) ROSTER.squad=r.squad;
+      if(r.bench) ROSTER.bench=r.bench;
+      if(r.roles) ROSTER.roles=r.roles;
+      if(r.pcVars) ROSTER.pcVars=r.pcVars;
+      if(r.nextVid) ROSTER.nextVid=r.nextVid;
+      if(r.rival) ROSTER.rival=r.rival;
+    }
+    if(d.match){
+      var m=d.match;
+      var keys=['pairs','mirror','curQ','phase','qElapsed','matchTime','breakCd',
+                'score','qLog','log','execIds','alerted','events','pos','posDragged'];
+      for(var i=0;i<keys.length;i++) if(m[keys[i]]!==undefined) MATCH[keys[i]]=m[keys[i]];
+    }
+    return true;
+  }catch(e){console.warn('load',e);return false;}
+}
+
+// ── START ──
+initROSTER();
+doLoad();
+go(0);
+</script>
+</body>
+</html>
