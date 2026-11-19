@@ -1,6 +1,6 @@
 // RedSticks · service worker
 // Cambia CACHE en cada version publicada: es lo que avisa a los iPads de que hay version nueva.
-var CACHE='redsticks-v33';
+var CACHE='redsticks-v34';
 var FILES=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png','icon-512-maskable.png'];
 
 self.addEventListener('install',function(e){
